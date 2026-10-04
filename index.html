@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analysis of a Card-Shuffle Stream Cipher · Scott D. Russell</title>
+<meta name="description" content="Slides and paper for Capt Scott D. Russell's M.S. Cybersecurity creative component at Iowa State University: an analysis of the Daniels' Cipher, a card-shuffle stream cipher.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='10' y='4' width='44' height='56' rx='7' fill='%23fff' stroke='%23C8102E' stroke-width='4'/%3E%3Ctext x='32' y='44' font-size='30' text-anchor='middle' fill='%23C8102E'%3E%E2%99%A5%3C/text%3E%3C/svg%3E">
+<!-- The landing page of https://captainrussell.github.io/Creative-Component/ (source: Final Report/Defense/site/index.html
+     in the CPRE5990 repo; presentation/publish_site.py copies it here with the slides and the paper). Self-contained: no
+     external files, and every link is relative, so the page works at any address. -->
+<style>
+  :root { --cardinal: #C8102E; --gold: #F1BE48; --ink: #1A1A1A; --grey: #6B6B6B; --panel: #F3F3F3; --page: #FFFFFF; --edge: #E2E2E2; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --ink: #F2F2F2; --grey: #B8B8B8; --panel: #262626; --page: #161616; --edge: #333333; }
+  }
+  :root[data-theme="dark"] { --ink: #F2F2F2; --grey: #B8B8B8; --panel: #262626; --page: #161616; --edge: #333333; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: Calibri, Carlito, "Segoe UI", system-ui, -apple-system, Arial, sans-serif; line-height: 1.45; }
+  header { background: var(--cardinal); color: #fff; padding: 48px 16px 56px; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  .eyebrow { margin: 0 0 10px; color: var(--gold); font-weight: 700; letter-spacing: .04em; font-size: 15px; text-transform: uppercase; }
+  h1 { margin: 0; font-family: Cambria, Georgia, "Times New Roman", serif; font-size: clamp(32px, 6vw, 52px); line-height: 1.08; }
+  .sub { margin: 12px 0 0; font-size: clamp(18px, 2.6vw, 22px); opacity: .95; }
+  .who { margin: 22px 0 0; font-size: 16px; opacity: .92; }
+  main { padding: 0 16px 48px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-top: -30px; }
+  a.card { display: block; padding: 22px 22px 20px; border-radius: 14px; background: var(--page); border: 1px solid var(--edge);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .12); color: inherit; text-decoration: none; transition: transform .12s ease, box-shadow .12s ease; }
+  a.card:hover, a.card:focus-visible { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0, 0, 0, .18); outline: none; }
+  a.card:focus-visible { border-color: var(--cardinal); }
+  .suit { font-size: 26px; line-height: 1; color: var(--cardinal); }
+  .card h2 { margin: 10px 0 6px; font-size: 22px; }
+  .card p { margin: 0; color: var(--grey); font-size: 16px; }
+  .go { display: inline-block; margin-top: 14px; padding: 8px 16px; border-radius: 999px; background: var(--cardinal); color: #fff; font-weight: 700; font-size: 16px; }
+  .alt { margin: 10px 0 0; font-size: 15px; }
+  .alt a { color: var(--cardinal); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .alt a { color: #FF8A9B; } }
+  :root[data-theme="dark"] .alt a { color: #FF8A9B; }
+  section.about { margin-top: 34px; padding: 20px 22px; border-radius: 14px; background: var(--panel); }
+  section.about h3 { margin: 0 0 8px; font-size: 18px; }
+  section.about p { margin: 0 0 8px; }
+  section.about p:last-child { margin-bottom: 0; }
+  footer { padding: 0 16px 36px; color: var(--grey); font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Creative component · M.S. Cybersecurity · Iowa State University</p>
+    <h1>Analysis of a Card-Shuffle Stream Cipher</h1>
+    <p class="sub">Cycle structure, rotation variants and weak keys in the Daniels’ Cipher</p>
+    <p class="who">Capt Scott D. Russell, USAF · Major professor: Dr. Thomas E. Daniels</p>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <div class="cards">
+      <a class="card" href="slides/">
+        <div class="suit" aria-hidden="true">♠</div>
+        <h2>The slides</h2>
+        <p>The oral examination, with its animations. Click, tap or use the arrow keys to step through; best on a laptop or a phone turned sideways.</p>
+        <span class="go">View the slides</span>
+      </a>
+      <a class="card" href="Russell_2026_Card-Shuffle-Stream-Cipher-Analysis.pdf">
+        <div class="suit" aria-hidden="true">♥</div>
+        <h2>The paper</h2>
+        <p>The full write-up, with the math, the pseudocode and every table behind the slides.</p>
+        <span class="go">Read the paper (PDF)</span>
+      </a>
+    </div>
+    <p class="alt">Or <a href="Russell_2026_Card-Shuffle-Stream-Cipher-Analysis.pdf" download>download the paper</a> to read later.</p>
+    <section class="about">
+      <h3>In one sentence</h3>
+      <p>Shrink a cipher until every state fits in memory, and its cycles, its period and its weak keys stop being estimates and become facts.</p>
+      <p>At 4, 6 and 8 cards per deck, every state of the Daniels’ Cipher was counted: 6.5 billion states across 12 configurations, on one laptop.</p>
+    </section>
+  </div>
+</main>
+<footer><div class="wrap">Scott D. Russell · Iowa State University, 2026</div></footer>
+</body>
+</html>
