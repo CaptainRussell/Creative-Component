@@ -1804,7 +1804,7 @@
       ['4 cards per deck · 24 × 24 orders', '576 states', '', '256 keys'],
       ['6 cards per deck · 720 × 720 orders', '518,400 states', '× 900', '46,656 keys'],
       ['8 cards per deck · 40,320 × 40,320 orders', '1,625,702,400 states', '× 3,136', '16,777,216 keys · the main result'],
-      ['10 cards per deck · 3,628,800 × 3,628,800 orders', '13.2 trillion states', '× 8,100', 'about 3 TB even at one bit per state'],
+      ['10 cards per deck · 3,628,800 × 3,628,800 orders', '13.2 trillion states', '× 8,100', 'about 3 TB of memory, even stored compactly'],
     ];
     ROWS.forEach(([lab, big, mult, keys], i) => {
       const y = RYS[i], next = i === 3, ink = next ? INK : WHITE, mute = next ? GREY : WHITE;
@@ -1871,9 +1871,9 @@
       zoom(56, 'lv2', [], 2, 'the whole 6-card square', '8! = 40,320');
 
       // ---- step 3: 10 cards, future work
-      S.step({ say: 'So why stop at eight? Ten cards per deck is the next step, and it is future work: 13 trillion states, another 8,100 times more. Even at one bit per state that is about 3 terabytes of memory. That needs a new approach, not a bigger computer.' });
+      S.step({ say: 'So why stop at eight? Ten cards per deck is the next step, and it is future work: 13 trillion states, another 8,100 times more. Even stored as compactly as I could manage, that is about 3 terabytes of memory. That needs a new approach, not a bigger computer.' });
       S.beat(0.45, (s) => cap(s, '10 cards per deck: 13.2 trillion states, future work',
-        'Another 90 × 90 = 8,100 times more: about 3 TB of memory even at one bit per state.\nThat needs a new approach, not a bigger computer.'));
+        'Another 90 × 90 = 8,100 times more: about 3 TB of memory, even stored as compactly as possible.\nThat needs a new approach, not a bigger computer.'));
       zoom(90, 'lv3', ['lv3b'], 3, 'everything counted, at 8 cards', '10! = 3,628,800');
 
       // ---- step 4: keys, and the full-size deck
@@ -2703,7 +2703,7 @@ Here's how this part goes: the big picture, the details, then a summary, like th
 
 The big picture: every round takes the decks from one state to the next, and every step can be undone, so the states fall into separate cycles, like these four from the small example. A stream repeats when its cycle comes back around, so the size of the cycles is what matters.
 
-Three ideas. First, why every state lands in a cycle. Second, counting every state: how fast the number grows with the deck size, and the twelve configurations I counted. Third, what the cycles show: a few giant cycles, the rotation setting's impact on them, and how long a stream runs before it repeats.`);
+Three ideas. First, why every state lands in a cycle. Second, counting every state: how fast the number grows with the deck size, and the twelve configurations I counted. Third, what the cycles show: a few giant cycles hold almost every state, and the rotation setting reshapes them.`);
   // what "cycle structure" means at a glance: the 4-card example's four cycles as rings, largest first
   const rings = [{ x: 0.7, y: 1.55, d: 2.75, col: C.accent1, lw: 7 }, { x: 3.75, y: 2.25, d: 1.4, col: '4A4A4A', lw: 6 },
     { x: 5.45, y: 1.95, d: 0.42, col: 'C99400', lw: 4 }, { x: 5.45, y: 3.45, d: 0.42, col: 'C99400', lw: 4 }];
@@ -2718,7 +2718,7 @@ Three ideas. First, why every state lands in a cycle. Second, counting every sta
   // the chapter's three ideas, numbered like the summary slides
   const ideas = [['1', 'Every state lands in a cycle', 'Each state leads to exactly one next state, so the states form separate cycles.'],
     ['2', 'Every state, counted', 'From 576 states at 4 cards to 1.6 billion at 8, in 12 configurations.'],
-    ['3', 'What the cycles show', 'A few giant cycles, the rotation’s impact, and how long a stream runs before it repeats.']];
+    ['3', 'What the cycles show', 'A few giant cycles hold almost every state, and the rotation setting reshapes them.']];
   ideas.forEach(([n, h1, d], i) => {
     const y = 1.45 + i * 1.3;
     s.addShape(pres.shapes.OVAL, { x: 6.75, y: y + 0.06, w: 0.7, h: 0.7, fill: { color: C.accent1 }, line: { color: C.accent1, width: 1 }, objectName: 'idea marker' });
@@ -2732,96 +2732,33 @@ Three ideas. First, why every state lands in a cycle. Second, counting every sta
 }
 animation('loops', 80);
 // The rest of Chapter 4, in Scott's order (2026-10-05): the state counts, all 12 configurations, the giant cycles, the
-// rotation's impact, then how 1.6 billion states fit on a laptop, how long a stream runs, and the summary. The first
-// three are one animation in three slides, and the giant-cycles slide ends back on the grid where the rotation slide
-// opens, so no hand-off between them jumps.
+// rotation's impact, then the summary. The first three are one animation in three slides, and the giant-cycles slide
+// ends back on the grid where the rotation slide opens, so no hand-off between them jumps. The memory and stream-length
+// slides that used to follow are backups now (Scott, 2026-10-05).
 animation('growth', 60);
 animation('scope', 50);
 animation('shares', 55);
 animation('rotation', 90);
 {
-  // Revamped at Scott's request (2026-10-04): one idea, told as problem, idea and result. The earlier methods are
-  // in the script for Q&A. Plain panels: nothing here is a card, so no card corners. Since 2026-10-05 it follows the
-  // results, as the question they leave: how did 1.6 billion states fit on a laptop?
-  const s = slide('CONTENT', 'Memory Efficiency: One Bit per State', 75, `
-One question those results leave: how do you sort 1.6 billion states into cycles on a laptop?
-
-The problem: the usual way stores, for every state, where it goes next. At eight cards that map is about 28 gigabytes, and my laptop had about 1.8 usable.
-
-The idea: store no map at all. Keep one checkbox per state, a single bit: have I visited this one yet? And when I need to know where a state goes next, I just run the shuffle again instead of looking it up.
-
-The result: under 400 megabytes, about seventy times less, and all 1.6 billion states sorted in roughly fifteen minutes per rotation setting. Every state is still visited exactly once, so the trade costs a little time and saves a lot of memory. That trade is what made eight cards possible on an ordinary laptop.
-
-If asked about earlier methods: I first followed each key until its stream repeated, which only sees the cycles some key lands on. At four and six cards, storing the full map was fine.`);
-  s.addChart(pres.charts.BAR, [{ name: 'Memory', labels: ['A full map of every next state', "The laptop's usable memory", 'One bit per state (this work)'], values: [28, 1.8, 0.39] }], {
-    x: 0.5, y: 1.4, w: 6.0, h: 4.5, barDir: 'bar', catAxisOrientation: 'maxMin', chartColors: ['9A9A9A', '4A4A4A', 'C8102E'],
-    barGapWidthPct: 70, showValue: true, dataLabelPosition: 'outEnd', dataLabelFormatCode: '0.0" GB"', dataLabelFontFace: '+mn-lt', dataLabelFontSize: 16, dataLabelFontBold: true, dataLabelColor: '1A1A1A',
-    catAxisLabelFontFace: '+mn-lt', catAxisLabelFontSize: 15, catAxisLabelColor: '1A1A1A', catAxisLineShow: false, valAxisHidden: true, valAxisMaxVal: 34, valAxisMinVal: 0,
-    valGridLine: { style: 'none' }, catGridLine: { style: 'none' }, showLegend: false, showTitle: true, title: 'Memory needed for 8 cards per deck', titleFontFace: '+mn-lt', titleFontSize: 18, titleColor: '1A1A1A',
-  });
-  const parts = [
-    ['THE PROBLEM', 'A full map needs 28 GB', 'The usual way stores where each of the 1.6 billion states goes next. The laptop had 1.8 GB free.'],
-    ['THE IDEA', 'Keep one bit per state', 'Just a checkbox: visited yet? Instead of storing a state’s next state, run the shuffle again to get it.'],
-    ['THE RESULT', 'Under 400 MB, about 70 times less', 'All 1.6 billion states sorted in about 15 minutes per rotation, each one visited exactly once.'],
-  ];
-  const PH = 1.45;
-  parts.forEach(([tag, h1, d], i) => {
-    const y = 1.4 + i * (PH + 0.15);
-    card(s, { x: 6.85, y, w: 5.98, h: PH, fill: i === 2 ? C.background2 : undefined });
-    panelText(s, 6.85, y, 5.98, PH, last([{ text: tag, options: { bold: true, fontSize: 13, color: C.accent1, breakLine: true } },
-      head(h1, { fontSize: 20 }), line(d, { fontSize: 16, color: C.accent6 })]), { valign: 'middle', paraSpaceAfter: 3, y: y + 0.06, h: PH - 0.12 });
-  });
-  s.addText('Trading a little time for a lot of memory is what made 8 cards possible on an ordinary laptop.', { x: 0.5, y: 6.25, w: 12.33, h: 0.55, margin: 0, fontFace: 'Calibri', fontSize: 18, italic: true, color: C.accent6, valign: 'middle', isTextBox: true });
-}
-{
-  const s = slide('CONTENT', 'How long before the stream repeats?', 45, `
-So how long does the stream actually run? For a typical key at the best rotation tested: about 1,300 bits at four cards. About 3 million at six. About 12 and a half billion at eight, roughly 1.5 gigabytes of stream. Each step of two cards multiplies it by thousands.
-
-Two honest footnotes. Counting each output card as a fixed number of bits assumes the output looks random, and I didn't test that, so read these as how long until repeat, not as strength. And a rough projection to the full 26-card deck lands around 2 to the 182nd bits, but that rests on three data points, so it's suggestive, not established.`);
-  const tiles = [['4 cards per deck', '1,300', 'bits before repeating'], ['6 cards per deck', '3.0 million', 'bits before repeating'], ['8 cards per deck', '12.5 billion', 'bits, about 1.5 GB of stream']];
-  const w = 3.45, xs = [0.5, 4.94, 9.38];
-  tiles.forEach(([h1, big, unit], i) => {
-    const hot = i === 2, x = xs[i], y = 1.5, h = 2.95;
-    card(s, { x, y, w, h, rank: String(4 + 2 * i), suit: hot ? undefined : (i ? 'H' : 'S'), fill: hot ? C.accent1 : C.background1, line: hot ? C.accent1 : undefined });
-    const ink = hot ? C.background1 : C.text1, mute = hot ? C.background1 : C.accent6;
-    s.addText(h1, { x: x + 0.25, y: y + 0.8, w: w - 0.5, h: 0.4, margin: 0, fontFace: 'Calibri', fontSize: 17, bold: true, color: mute, isTextBox: true });
-    s.addText(big, { x: x + 0.25, y: y + 1.25, w: w - 0.5, h: 0.85, margin: 0, fontFace: 'Calibri', fontSize: 40, bold: true, color: ink, valign: 'middle', isTextBox: true });
-    s.addText(unit, { x: x + 0.25, y: y + 2.1, w: w - 0.5, h: 0.6, margin: 0, fontFace: 'Calibri', fontSize: 16, color: mute, valign: 'top', isTextBox: true });
-  });
-  [['× 2,300', 3.95], ['× 4,200', 8.39]].forEach(([t, x]) => {
-    s.addText(t, { x, y: 2.65, w: 0.99, h: 0.6, margin: 0, align: 'center', valign: 'middle', fontFace: 'Calibri', fontSize: 17, bold: true, color: C.accent1, isTextBox: true });
-  });
-  s.addText('Typical key, best rotation tested at each size (rotation 0 at 4 cards, rotation 5 at 6 and 8).', { x: 0.5, y: 4.6, w: 12.33, h: 0.45, margin: 0, fontFace: 'Calibri', fontSize: 16, color: C.accent6, isTextBox: true });
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 5.25, w: 12.333, h: 1.55, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'caveat panel' });
-  s.addText([
-    { text: 'Bits are a unit for comparing, not a strength claim. ', options: { bold: true } }, { text: 'Each card counts as log₂ n bits only if the output is truly random, which was not tested.', options: { breakLine: true } },
-    { text: 'A rough projection to 26 cards: about 2', options: { color: C.accent6 } }, { text: '182', options: { superscript: true, color: C.accent6 } }, { text: ' bits. Three data points make that suggestive, not established.', options: { color: C.accent6 } },
-  ], { x: 0.85, y: 5.3, w: 11.7, h: 1.45, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 18, color: C.text1, isTextBox: true, paraSpaceAfter: 4 });
-}
-
-{
-  // The chapter brought back together, like part 2's summary (2026-10-04): the four findings, then the bridge.
+  // The chapter brought back together, like part 2's summary (2026-10-04): three findings since the memory and
+  // stream-length slides became backups (2026-10-05), then the bridge.
   const s = slide('CONTENT', 'Cycle Structure: Summary', 40, `
 Let me bring this part back together.
 
 One: every state lands in exactly one cycle. Every step can be undone, so states never merge, and the cycle lengths always add up to n-factorial squared.
 
-Two: I counted every state, about six and a half billion across twelve configurations, from 576 at four cards to 1.6 billion at eight. One bit per state is what made eight cards fit on a laptop.
+Two: I counted every state, about six and a half billion across twelve configurations, from 576 at four cards to 1.6 billion at eight.
 
 Three: a few giant cycles hold almost every state, with a tail of small ones, and the rotation setting reshapes them: at eight cards the largest cycle grows from 45 to 78 percent.
 
-Four: streams run long. A typical key at eight cards, at the best rotation tested, runs about 12 and a half billion bits before it repeats.
-
 What decides which cycle a stream runs on is where its key starts. That's the key analysis, right after a quick recap.`);
   const rows = [
-    { n: '1', head: 'Every state lands in exactly one cycle', y: 1.3,
+    { n: '1', head: 'Every state lands in exactly one cycle', y: 1.45,
       body: 'Every step can be undone, so states never merge, and the cycle lengths always add up to (n!)², the number of states.' },
-    { n: '2', head: 'Every state counted', y: 2.45,
-      body: 'About 6.5 billion states across 12 configurations, from 576 at 4 cards to 1.6 billion at 8. One bit per state made 8 cards fit on a laptop.' },
-    { n: '3', head: 'A few giant cycles hold almost every state', y: 3.6,
+    { n: '2', head: 'Every state counted', y: 2.95,
+      body: 'About 6.5 billion states across 12 configurations, from 576 at 4 cards to 1.6 billion at 8.' },
+    { n: '3', head: 'A few giant cycles hold almost every state', y: 4.45,
       body: 'Then a tail of small cycles. The rotation setting reshapes them: at 8 cards the largest cycle grows from 45% to 78%.' },
-    { n: '4', head: 'Streams run for billions of bits', y: 4.75,
-      body: 'A typical key at 8 cards, at the best rotation tested, runs about 12.5 billion bits before it repeats.' },
   ];
   rows.slice(0, -1).forEach((r, i) => s.addShape(pres.shapes.RECTANGLE, { x: 0.83, y: r.y + 0.78, w: 0.04, h: rows[i + 1].y - r.y - 0.7,
     fill: { color: 'D9D9D9' }, line: { color: 'D9D9D9', width: 0 }, objectName: 'finding connector' }));
@@ -3128,6 +3065,67 @@ function table(s, rows, opts) {
 }
 function note(s, text, y) {
   s.addText(text, { x: 0.5, y: y || 6.1, w: 12.33, h: 0.75, margin: 0, fontFace: 'Calibri', fontSize: 16, color: C.accent6, valign: 'top', isTextBox: true });
+}
+// Moved out of Part 3 at Scott's request (2026-10-05): the memory method and the stream length, for Q&A.
+{
+  // Revamped at Scott's request (2026-10-04): one idea, told as problem, idea and result. The earlier methods are
+  // in the script for Q&A. Plain panels: nothing here is a card, so no card corners. A backup since 2026-10-05, for
+  // "how did 1.6 billion states fit on a laptop?"
+  const s = slide('CONTENT', 'Backup: memory efficiency, one bit per state', 0, `
+If asked how 1.6 billion states fit on a laptop:
+
+The problem: the usual way stores, for every state, where it goes next. At eight cards that map is about 28 gigabytes, and my laptop had about 1.8 usable.
+
+The idea: store no map at all. Keep one checkbox per state, a single bit: have I visited this one yet? And when I need to know where a state goes next, I just run the shuffle again instead of looking it up.
+
+The result: under 400 megabytes, about seventy times less, and all 1.6 billion states sorted in roughly fifteen minutes per rotation setting. Every state is still visited exactly once, so the trade costs a little time and saves a lot of memory. That trade is what made eight cards possible on an ordinary laptop.
+
+If asked about earlier methods: I first followed each key until its stream repeated, which only sees the cycles some key lands on. At four and six cards, storing the full map was fine.`);
+  s.addChart(pres.charts.BAR, [{ name: 'Memory', labels: ['A full map of every next state', "The laptop's usable memory", 'One bit per state (this work)'], values: [28, 1.8, 0.39] }], {
+    x: 0.5, y: 1.4, w: 6.0, h: 4.5, barDir: 'bar', catAxisOrientation: 'maxMin', chartColors: ['9A9A9A', '4A4A4A', 'C8102E'],
+    barGapWidthPct: 70, showValue: true, dataLabelPosition: 'outEnd', dataLabelFormatCode: '0.0" GB"', dataLabelFontFace: '+mn-lt', dataLabelFontSize: 16, dataLabelFontBold: true, dataLabelColor: '1A1A1A',
+    catAxisLabelFontFace: '+mn-lt', catAxisLabelFontSize: 15, catAxisLabelColor: '1A1A1A', catAxisLineShow: false, valAxisHidden: true, valAxisMaxVal: 34, valAxisMinVal: 0,
+    valGridLine: { style: 'none' }, catGridLine: { style: 'none' }, showLegend: false, showTitle: true, title: 'Memory needed for 8 cards per deck', titleFontFace: '+mn-lt', titleFontSize: 18, titleColor: '1A1A1A',
+  });
+  const parts = [
+    ['THE PROBLEM', 'A full map needs 28 GB', 'The usual way stores where each of the 1.6 billion states goes next. The laptop had 1.8 GB free.'],
+    ['THE IDEA', 'Keep one bit per state', 'Just a checkbox: visited yet? Instead of storing a state’s next state, run the shuffle again to get it.'],
+    ['THE RESULT', 'Under 400 MB, about 70 times less', 'All 1.6 billion states sorted in about 15 minutes per rotation, each one visited exactly once.'],
+  ];
+  const PH = 1.45;
+  parts.forEach(([tag, h1, d], i) => {
+    const y = 1.4 + i * (PH + 0.15);
+    card(s, { x: 6.85, y, w: 5.98, h: PH, fill: i === 2 ? C.background2 : undefined });
+    panelText(s, 6.85, y, 5.98, PH, last([{ text: tag, options: { bold: true, fontSize: 13, color: C.accent1, breakLine: true } },
+      head(h1, { fontSize: 20 }), line(d, { fontSize: 16, color: C.accent6 })]), { valign: 'middle', paraSpaceAfter: 3, y: y + 0.06, h: PH - 0.12 });
+  });
+  s.addText('Trading a little time for a lot of memory is what made 8 cards possible on an ordinary laptop.', { x: 0.5, y: 6.25, w: 12.33, h: 0.55, margin: 0, fontFace: 'Calibri', fontSize: 18, italic: true, color: C.accent6, valign: 'middle', isTextBox: true });
+}
+{
+  // A backup since 2026-10-05, for "how long does the stream run before it repeats?"
+  const s = slide('CONTENT', 'Backup: how long before the stream repeats', 0, `
+If asked how long the stream actually runs: For a typical key at the best rotation tested: about 1,300 bits at four cards. About 3 million at six. About 12 and a half billion at eight, roughly 1.5 gigabytes of stream. Each step of two cards multiplies it by thousands.
+
+Two honest footnotes. Counting each output card as a fixed number of bits assumes the output looks random, and I didn't test that, so read these as how long until repeat, not as strength. And a rough projection to the full 26-card deck lands around 2 to the 182nd bits, but that rests on three data points, so it's suggestive, not established.`);
+  const tiles = [['4 cards per deck', '1,300', 'bits before repeating'], ['6 cards per deck', '3.0 million', 'bits before repeating'], ['8 cards per deck', '12.5 billion', 'bits, about 1.5 GB of stream']];
+  const w = 3.45, xs = [0.5, 4.94, 9.38];
+  tiles.forEach(([h1, big, unit], i) => {
+    const hot = i === 2, x = xs[i], y = 1.5, h = 2.95;
+    card(s, { x, y, w, h, rank: String(4 + 2 * i), suit: hot ? undefined : (i ? 'H' : 'S'), fill: hot ? C.accent1 : C.background1, line: hot ? C.accent1 : undefined });
+    const ink = hot ? C.background1 : C.text1, mute = hot ? C.background1 : C.accent6;
+    s.addText(h1, { x: x + 0.25, y: y + 0.8, w: w - 0.5, h: 0.4, margin: 0, fontFace: 'Calibri', fontSize: 17, bold: true, color: mute, isTextBox: true });
+    s.addText(big, { x: x + 0.25, y: y + 1.25, w: w - 0.5, h: 0.85, margin: 0, fontFace: 'Calibri', fontSize: 40, bold: true, color: ink, valign: 'middle', isTextBox: true });
+    s.addText(unit, { x: x + 0.25, y: y + 2.1, w: w - 0.5, h: 0.6, margin: 0, fontFace: 'Calibri', fontSize: 16, color: mute, valign: 'top', isTextBox: true });
+  });
+  [['× 2,300', 3.95], ['× 4,200', 8.39]].forEach(([t, x]) => {
+    s.addText(t, { x, y: 2.65, w: 0.99, h: 0.6, margin: 0, align: 'center', valign: 'middle', fontFace: 'Calibri', fontSize: 17, bold: true, color: C.accent1, isTextBox: true });
+  });
+  s.addText('Typical key, best rotation tested at each size (rotation 0 at 4 cards, rotation 5 at 6 and 8).', { x: 0.5, y: 4.6, w: 12.33, h: 0.45, margin: 0, fontFace: 'Calibri', fontSize: 16, color: C.accent6, isTextBox: true });
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 5.25, w: 12.333, h: 1.55, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'caveat panel' });
+  s.addText([
+    { text: 'Bits are a unit for comparing, not a strength claim. ', options: { bold: true } }, { text: 'Each card counts as log₂ n bits only if the output is truly random, which was not tested.', options: { breakLine: true } },
+    { text: 'A rough projection to 26 cards: about 2', options: { color: C.accent6 } }, { text: '182', options: { superscript: true, color: C.accent6 } }, { text: ' bits. Three data points make that suggestive, not established.', options: { color: C.accent6 } },
+  ], { x: 0.85, y: 5.3, w: 11.7, h: 1.45, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 18, color: C.text1, isTextBox: true, paraSpaceAfter: 4 });
 }
 {
   const s = slide('CONTENT', 'Backup: every cycle at 4 and 6 cards', 0, 'Table 3 of the paper. An asterisk marks a cycle no key starts on. At 4 cards, rotation 5 is identical to rotation 1, because 5 mod 4 = 1; the byte-identical output doubled as a check on the wrap-around fix.');
