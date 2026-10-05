@@ -2205,12 +2205,11 @@
       S.beat(dur, (s) => to.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y[row]; s[id].z = 10 + i; }),
         (id) => { const a = from.indexOf(id), b = to.indexOf(id); return a < 0 || b < 0 || a === b ? null : { arc: b > a ? 38 : -38 }; });
     }
-    function letter(o, fast, key) {
+    function letter(o, fast) {
       const d = fast ? 0.42 : 0.85, gap = fast ? 0.08 : 0.3;
       S.beat(fast ? 0.25 : 0.45, (s) => {
         for (let i = 0; i < 4; i++) { s['kt' + i].fill = '#FFFFFF'; s['kt' + i].sw = 2.5; s['kt' + i].stroke = CHAR; }
-        s['kt' + o.i].fill = GOLD;
-        const nx = (o.i + 1) % key.length; s['kt' + nx].stroke = GOLD_D; s['kt' + nx].sw = 6;
+        s['kt' + o.i].fill = GOLD;     // only the letter in use is lit, as in the ABBA replay (Scott, 2026-10-05)
         opText(o).forEach((t, j) => { s['op' + j].content = t; s['hl' + j].o = 0; });
       });
       const seq = [['drive', o.drive[0], o.drive[1]], ['drive', o.drive[1], o.drive[2]],
@@ -2242,13 +2241,13 @@
     S.step({ say: 'Each letter drives four of the same cuts you just saw: two on the Drive Deck, two on the Search Deck, using this letter and the next one. Here is the first letter, B, worth one.' });
     S.beat(0.45, (s) => cap(s, 'Letter 1: B (worth 1), with the next letter A (worth 0)',
       'Each letter drives four cuts, two on each deck, using this letter and the next one.\nThese are the same Count Cut and Search Cut as the worked example, just driven by the key instead of the cards.'));
-    letter(ks1.ops[0], false, KEY1);
+    letter(ks1.ops[0], false);
 
     // ---- step 2: the remaining letters, quickly
     S.step({ say: 'The other three letters do the same thing, quickly. The last letter wraps around and uses the first letter as its partner.' });
     S.beat(0.45, (s) => cap(s, 'Letters 2 to 4: the same four cuts each',
       'The last letter wraps around and pairs with the first. When the letters run out, the decks hold this key’s starting arrangement.'));
-    for (let i = 1; i < 4; i++) letter(ks1.ops[i], true, KEY1);
+    for (let i = 1; i < 4; i++) letter(ks1.ops[i], true);
     S.beat(0.4, (s) => { resetKeyTiles(s); s.stageLbl.content = 'STARTING ARRANGEMENT'; });
     S.hold(0.4);
 
