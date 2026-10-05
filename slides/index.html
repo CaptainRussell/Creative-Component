@@ -3100,7 +3100,7 @@ animation('rotation', 90);
   // Moved here from Key Analysis at Scott's request (2026-10-05): it draws the rotation slide's conclusion. The weak-key
   // row is left out: weak keys come in Part 4 (the weak-keys slide has them by rotation).
   const s = slide('CONTENT', 'Rotation Analysis at 8 Deck Size', 45, `
-Putting it together at eight cards. Rotations 0 and 3 are out: each lets a real key onto a four-round cycle, and nothing else makes up for that. Rotation 5 has the longest typical period, about a billion rounds, the biggest dominant cycle, and the highest floor. Rotation 1 is the reasonable alternative.
+Putting it together at eight cards. Rotation 5 is the one I recommend: it has the biggest dominant cycle, 78 percent of all states, the longest typical period, about a billion rounds, and the highest floor. Rotations 0 and 3 each let a real key onto a four-round cycle.
 
 Three honest limits on that recommendation. It's the best of four tested, out of eight possible at this size. At six cards the two criteria actually disagree. And it says nothing about randomness, or about the full 26-card deck.`);
   const cols = [['0', 'Ruled out', '649 million', '44.8%', '4'], ['1', 'Alternative', '518 million', '48.0%', '225'],
@@ -3111,8 +3111,11 @@ Three honest limits on that recommendation. It's the best of four tested, out of
     const x = 0.5 + i * (w + g), y = 1.4, h = 4.3, rec = verdict === 'Recommended', out = verdict === 'Ruled out';
     card(s, { x, y, w, h, rank: r, suit: i % 2 ? 'H' : 'S', fill: rec ? C.background2 : undefined, line: rec ? C.accent1 : undefined });
     s.addText(`Rotation ${r}`, { x: x + 0.62, y: y + 0.12, w: w - 0.75, h: 0.45, margin: 0, fontFace: 'Calibri', fontSize: 20, bold: true, color: C.text1, isTextBox: true });
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, rectRadius: 0.08, fill: { color: rec ? C.accent1 : (out ? C.text1 : C.accent6) }, line: { color: rec ? C.accent1 : (out ? C.text1 : C.accent6), width: 0 }, objectName: 'verdict badge' });
-    s.addText(verdict, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, margin: 0, align: 'center', valign: 'middle', fontFace: 'Calibri', fontSize: 15, bold: true, color: C.background1, isTextBox: true });
+    // only the recommendation carries a badge (Scott, 2026-10-05); he talks to it from the numbers
+    if (rec) {
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, rectRadius: 0.08, fill: { color: C.accent1 }, line: { color: C.accent1, width: 0 }, objectName: 'verdict badge' });
+      s.addText(verdict, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, margin: 0, align: 'center', valign: 'middle', fontFace: 'Calibri', fontSize: 15, bold: true, color: C.background1, isTextBox: true });
+    }
     [per, big, floor].forEach((v, k) => {
       const bad = k === 2 && out;
       s.addText([{ text: labels[k], options: { fontSize: 13, color: C.accent6, breakLine: true } }, { text: v, options: { fontSize: 19, bold: true, color: bad ? C.accent1 : C.text1 } }],
