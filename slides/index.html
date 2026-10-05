@@ -134,9 +134,13 @@
   .dcbar .menu button.cur { background: #C8102E; }
   .dcbar .menu button.cur span, .dcbar .menu button.cur em { color: #fff; }
   /* An animation's entry (marked >) opens a flyout of its steps to the right, one per click, so any step can be
-     played straight from the bar. The part menus don't scroll, so nothing clips the flyout; a long list of
-     steps scrolls inside the flyout instead. It overlaps the menu's padding so the mouse never crosses a gap. */
+     played straight from the bar. The flyout opens level with its own entry (the entry is its containing block), so
+     the mouse moves straight across into it (Scott, 2026-10-05: it used to open at the top of the menu, out of reach);
+     near the bottom of the window present.js lifts it just enough to fit, still beside its entry. The part menus don't
+     scroll, so nothing clips the flyout; a long list of steps scrolls inside the flyout instead. It overlaps its
+     entry's edge so the mouse never crosses a gap. */
   .dcbar .menu .more { margin-left: 10px; color: #c9c9c9; font-style: normal; }
+  .dcbar .it { position: relative; }
   .dcbar .it:hover > button { background: rgba(255, 255, 255, .13); }
   .dcbar .it:hover > button.cur { background: #C8102E; }
   .dcbar .sub { display: none; position: absolute; left: calc(100% - 6px); top: 0; z-index: 3; width: max-content; min-width: 320px; max-width: min(660px, 62vw);
@@ -4162,11 +4166,17 @@ else root.DeckContent = { buildSlides };
       if (main && body.classList.contains('bar-peek')) { body.classList.remove('bar-peek'); peekHold = true; }
     });
     bar.querySelectorAll('.tab').forEach((t) => t.addEventListener('mouseleave', () => t.classList.remove('shut')));
-    // A flyout opens to the right, or to the left if the window is too narrow; it scrolls to the current step.
+    // A flyout opens level with its entry, to the right, or to the left if the window is too narrow. Near the bottom of
+    // the window it moves up just enough to fit, so it still spans its entry and the mouse can cross straight into it.
+    // It scrolls to the current step.
     bar.querySelectorAll('.it').forEach((it) => it.addEventListener('mouseenter', () => {
-      const sub = it.querySelector('.sub'), cur = sub.querySelector('.cur');
+      const sub = it.querySelector('.sub'), cur = sub.querySelector('.cur'), win = doc.defaultView;
       sub.classList.remove('flip');
-      if (sub.getBoundingClientRect().right > doc.defaultView.innerWidth - 4) sub.classList.add('flip');
+      sub.style.top = '';
+      const r = sub.getBoundingClientRect();
+      if (r.right > win.innerWidth - 4) sub.classList.add('flip');
+      const lift = Math.min(r.bottom - (win.innerHeight - 6), r.top - 6);
+      if (lift > 0) sub.style.top = `${-lift}px`;
       if (cur && (cur.offsetTop < sub.scrollTop || cur.offsetTop + cur.offsetHeight > sub.scrollTop + sub.clientHeight)) sub.scrollTop = cur.offsetTop - sub.clientHeight / 2;
     }));
     bars.push(bar);
