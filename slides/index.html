@@ -1464,9 +1464,25 @@
       { lab: '8 cards per deck', states: '1,625,702,400 states', cells: [[0.4483, 0.4383, 0.0730, 0.0405, 26], [0.4802, 0.2160, 0.1809, 0.1228, 18], [0.6572, 0.1690, 0.0939, 0.0798, 26], [0.7840, 0.1498, 0.0232, 0.0430, 28]] },
     ];
   }
+  // Where the keys land, by configuration: the share of keys whose first state is on the largest cycle, the second, the
+  // third and all others (4 and 6 cards from Final Report/Misc/decompose_deck4_6.py's decomposition, 8 cards from the
+  // Appendix's deck8kc_rot*.txt). The example's own cell is counted from the scene's keys.
+  function keyConfigs() {
+    const L = loopData(), counts = [0, 0, 0, 0];
+    L.keys.forEach((k) => { counts[L.where[k.code].ci]++; });
+    return [
+      { lab: '4 cards per deck', states: '576 states', cells: [[0.7188, 0.2305, 0.0508, 0], [0.5820, 0.3086, 0.0508, 0.0586], counts.map((c) => c / L.keys.length),
+        Object.assign([0.5820, 0.3086, 0.0508, 0.0586], { note: 'same as r = 1 (5 mod 4 = 1)' })] },
+      { lab: '6 cards per deck', states: '518,400 states', cells: [[0.8036, 0.1867, 0.0068, 0.0029], [0.4266, 0.2440, 0.2212, 0.1082], [0.7228, 0.1870, 0.0536, 0.0367], [0.8557, 0.1172, 0.0266, 0.0005]] },
+      { lab: '8 cards per deck', states: '1,625,702,400 states', cells: [[0.4483, 0.4383, 0.0729, 0.0404], [0.4803, 0.2159, 0.1809, 0.1229], [0.6573, 0.1688, 0.0940, 0.0799], [0.7840, 0.1498, 0.0232, 0.0430]] },
+    ];
+  }
+  // What a grid shows: each configuration's cycles (the cycles animation) or its keys (the key-landing animation).
+  const STATE_GRID = { configs: zoomConfigs, num: (cell) => String(cell[4]), size: () => 36, unit: 'cycles', label: (cell) => `largest ${Math.round(cell[0] * 100)}%` };
+  const KEY_GRID = { configs: keyConfigs, num: (cell, i) => ['256', '46,656', '16.8M'][i], size: (i) => (i ? 29 : 36), unit: 'keys', label: (cell) => `largest catches ${Math.round(cell[0] * 100)}%`, box: 210 };
   // Adds the grid: hidden, for the cycles animation to reveal cell by cell, or shown, for a slide that opens on it.
-  function zoomGrid(S, shown) {
-    const CONFIGS = zoomConfigs(), on = shown ? 1 : 0;
+  function zoomGrid(S, shown, spec) {
+    const G = spec || STATE_GRID, CONFIGS = G.configs(), on = shown ? 1 : 0;
     const cellIds = (i, j) => [0, 1, 2, 3].map((k) => `z${i}${j}a${k}`).concat([`z${i}${j}n`, `z${i}${j}c`, `z${i}${j}l`]);
     ZROTS.forEach((t, j) => S.add('zCol' + j, 'text', { size: 27, weight: 700, anchor: 'middle' }, { x: ZX[j], y: 62, content: t, o: on }));
     CONFIGS.forEach((row, i) => {
@@ -1481,22 +1497,24 @@
           S.add(`z${i}${j}a${k}`, 'ring', { cap: 'butt' }, { x: cx, y: cy, r: ZR, stroke: ZSEG[k], sw: 22, start: cum, draw: shown || isHere ? zArc(cell[k]) : 0, o: shown || !isHere ? 1 : 0, z: 3 });
           cum += cell[k];
         }
-        S.add(`z${i}${j}n`, 'text', { size: 36, weight: 700, anchor: 'middle' }, { x: cx, y: cy + 10, content: String(cell[4]), o: on, z: 4 });
-        S.add(`z${i}${j}c`, 'text', { size: 18, anchor: 'middle' }, { x: cx, y: cy + 34, content: 'cycles', fill: GREY, o: on, z: 4 });
-        S.add(`z${i}${j}l`, 'text', { size: 21, anchor: 'middle' }, { x: cx, y: cy + 104, content: `largest ${Math.round(cell[0] * 100)}%`, fill: GREY, o: on, z: 4 });
+        S.add(`z${i}${j}n`, 'text', { size: G.size(i), weight: 700, anchor: 'middle' }, { x: cx, y: cy + Math.round(G.size(i) * 0.28), content: G.num(cell, i, j), o: on, z: 4 });
+        S.add(`z${i}${j}c`, 'text', { size: 18, anchor: 'middle' }, { x: cx, y: cy + 34, content: G.unit, fill: GREY, o: on, z: 4 });
+        S.add(`z${i}${j}l`, 'text', { size: 21, anchor: 'middle' }, { x: cx, y: cy + 104, content: G.label(cell), fill: GREY, o: on, z: 4 });
       });
     });
-    S.add('zHere', 'rect', {}, { x: ZX[ZHJ] - 88, y: ZY[ZHI] - 88, w: 176, h: 222, rx: 18, fill: '#FFFFFF', fo: 0, stroke: GOLD, sw: 5, o: 0, z: 2 });
+    const bw = G.box || 176;     // wide enough for the cell's label
+    S.add('zHere', 'rect', {}, { x: ZX[ZHJ] - bw / 2, y: ZY[ZHI] - 88, w: bw, h: 222, rx: 18, fill: '#FFFFFF', fo: 0, stroke: GOLD, sw: 5, o: 0, z: 2 });
     S.add('zNote', 'text', { size: 19, italic: true }, { x: 72, y: ZY[2] + 62, content: '4 of the 8 possible rotations\n(2, 4, 6, 7 untested)', fill: GREY, o: on });
     const showCell = (s, i, j) => { cellIds(i, j).forEach((id, q) => { if (q < 4) s[id].draw = zArc(CONFIGS[i].cells[j][q]); s[id].o = 1; }); };
     const rowTiming = (i) => (id) => { const m = id.match(/^z(\d)(\d)[anlcm]/); if (!m || +m[1] !== i) return null; const a = +m[2] * 0.14; return { w: [a, a + 0.55] }; };
     return { CONFIGS, cellIds, showCell, rowTiming };
   }
   // The scope slide's last click: the whole grid framed in gold, with the total. The giant-cycles slide opens on it.
-  function scopeFrame(S, on) {
-    S.add('zAll', 'rect', {}, { x: 528, y: 26, w: 1274, h: 718, rx: 18, fill: '#FFFFFF', fo: 0, stroke: GOLD, sw: 5, o: on, z: 2 });
+  function scopeFrame(S, on, total, left) {
+    const x0 = left || 528;       // the keys' grid has wider labels under its rings
+    S.add('zAll', 'rect', {}, { x: x0, y: 26, w: 1802 - x0, h: 718, rx: 18, fill: '#FFFFFF', fo: 0, stroke: GOLD, sw: 5, o: on, z: 2 });
     S.add('zTot', 'text', { size: 27, weight: 700 }, { x: 72, y: 56, content: 'All 12 configurations', o: on });
-    S.add('zTotS', 'text', { size: 24, weight: 700 }, { x: 72, y: 92, content: '6,504,885,504 states', fill: RED, o: on });
+    S.add('zTotS', 'text', { size: 24, weight: 700 }, { x: 72, y: 92, content: total || '6,504,885,504 states', fill: RED, o: on });
   }
   // Stacked bars of cycle shares, one per cell, in the rings' colours. Each segment starts empty (w 0); its share is
   // printed inside it when the segment is wide enough. Returns the segments, for unrollBars.
@@ -2353,6 +2371,23 @@
     S.add('weakRing2', 'ring', {}, { x: geo[2].cx, y: geo[2].cy, r: geo[2].r + 34, stroke: GOLD, sw: 6, o: 0 });
     S.add('weakRing3', 'ring', {}, { x: geo[3].cx, y: geo[3].cy, r: geo[3].r + 34, stroke: GOLD, sw: 6, o: 0 });
 
+    // The zoom-out (Scott, 2026-10-05): every configuration's keys, as the cycles animation showed every configuration's
+    // states. Each key has a place on the example cell's ring: its cycle's arc, in the order the keys sit on the cycle.
+    const kg = zoomGrid(S, false, KEY_GRID), kHere = kg.CONFIGS[ZHI].cells[ZHJ], kCum = [0];
+    scopeFrame(S, 0, '67,296,512 keys', 498);
+    kHere.forEach((v, ci) => kCum.push(kCum[ci] + v));
+    const onCell = {}, byCycle = [[], [], [], []];
+    L.keys.forEach((k, i) => byCycle[k.ci].push(i));
+    byCycle.forEach((list, ci) => {
+      list.sort((a, b) => L.where[L.keys[a].code].k - L.where[L.keys[b].code].k || a - b);
+      list.forEach((i, rank) => {
+        const a = -Math.PI / 2 + 2 * Math.PI * (kCum[ci] + (kHere[ci] * (rank + 0.5)) / list.length);
+        onCell[i] = { x: ZX[ZHJ] + ZR * Math.cos(a), y: ZY[ZHI] + ZR * Math.sin(a) };
+      });
+    });
+    const keyFly = (id) => { if (!/^k\d+$/.test(id)) return null; const ci = L.keys[+id.slice(1)].ci; return { w: [ci * 0.07, ci * 0.07 + 0.78] }; };
+    const LABELS = ['st', 'sn', 'kc', 'sp', 'guide'];
+
     // ---- step 0
     S.step({ say: 'Now do that for every key. At four cards per deck there are 256 possible keys. Each one lands somewhere on these four cycles.' });
     S.beat(0.45, (s) => cap(s, 'Every key, run through the key schedule',
@@ -2384,10 +2419,50 @@
     S.beat(0.7, (s) => { s.rp1.o = 1; s.rp2.o = 1; });
     S.hold(0.3);
 
-    // ---- step 3: weak keys
-    S.step({ say: 'But in proportion is not the same as never. These nine keys landed on cycles three and four, the tiny ones: their streams would repeat every eleven rounds. Those are weak keys. At eight cards per deck they are rare, but the worst case is severe, which is the next slide.' });
+    // ---- step 3: zoom out, every key of every configuration
+    S.step({ say: 'And that was just one configuration. The same check ran for every key in all twelve: 256 keys at four cards, about forty-seven thousand at six, and sixteen point eight million at eight, at each rotation setting, about sixty-seven million keys in all. Each ring shows where one configuration’s keys landed, split by cycle like before: the largest cycle in red, the second in charcoal, the rest in gold. Every one of those keys was placed exactly, not sampled.' });
+    S.beat(0.45, (s) => cap(s, 'Zoom out: every key, in all 12 configurations',
+      'The same check ran for every key: 256 at 4 cards, 46,656 at 6 and 16,777,216 at 8, at each rotation setting.\nEach ring shows where one configuration’s keys landed, by cycle: largest red, second charcoal, the rest gold.'));
+    S.beat(0.6, (s) => {
+      for (let i = 0; i < 4; i++) LABELS.forEach((p) => { s[p + i].o = 0; });
+      for (let c = 0; c < total; c++) s['d' + c].o = 0;
+      ['rp1', 'rp2', 'cfgTag', 'cfgTxt'].forEach((k) => { s[k].o = 0; });
+    });
+    // every key flies to its place on the example cell's ring, so its cycles become the ring's arcs
+    S.beat(1.8, (s) => { L.keys.forEach((k, i) => Object.assign(s['k' + i], onCell[i], { r: 3 })); }, keyFly);
+    S.beat(0.6, (s) => {
+      L.keys.forEach((k, i) => { s['k' + i].o = 0; });
+      kg.cellIds(ZHI, ZHJ).forEach((id) => { s[id].o = 1; });
+      s.zHere.o = 1; s['zCol' + ZHJ].o = 1; s.zRow0.o = 1; s.zSts0.o = 1;
+    });
+    S.beat(0.5, (s) => { ZROTS.forEach((t, j) => { s['zCol' + j].o = 1; }); });
+    S.beat(1.3, (s) => { kg.showCell(s, 0, 0); kg.showCell(s, 0, 1); kg.showCell(s, 0, 3); s.z03m.o = 1; }, kg.rowTiming(0));
+    S.beat(1.4, (s) => { s.zRow1.o = 1; s.zSts1.o = 1; for (let j = 0; j < 4; j++) kg.showCell(s, 1, j); }, kg.rowTiming(1));
+    S.beat(1.4, (s) => { s.zRow2.o = 1; s.zSts2.o = 1; s.zNote.o = 1; for (let j = 0; j < 4; j++) kg.showCell(s, 2, j); }, kg.rowTiming(2));
+    S.beat(0.6, (s) => { s.zHere.o = 0; s.zAll.o = 1; });
+    S.beat(0.5, (s) => { s.zTot.o = 1; s.zTotS.o = 1; });
+    S.hold(0.4);
+
+    // ---- step 4: back into the example, onto the rare weak keys
+    S.step({ say: 'Now back into the example, and onto the keys that matter most. In proportion is not the same as never. These nine keys landed on cycles three and four, the tiny ones: their streams would repeat every eleven rounds. Those are weak keys. At eight cards per deck they are rare, but the worst case is severe, which is the next slide.' });
     S.beat(0.45, (s) => cap(s, 'Weak keys: rare, but not never',
       `${counts[2] + counts[3]} of the 256 keys land on Cycle #3 or #4, 11 states each, so their streams repeat every 11 rounds.\nA weak key is weak because of where it lands, not because of anything in its letters.`));
+    // the grid folds back into the example's cell...
+    S.beat(0.7, (s) => {
+      for (let i = 0; i < 3; i++) for (let j = 0; j < 4; j++) if (i !== ZHI || j !== ZHJ) kg.cellIds(i, j).forEach((id) => { s[id].o = 0; });
+      ['zAll', 'zTot', 'zTotS', 'zNote', 'z03m'].forEach((k) => { s[k].o = 0; });
+      for (let i = 0; i < 3; i++) { s['zRow' + i].o = 0; s['zSts' + i].o = 0; }
+      ZROTS.forEach((t, j) => { s['zCol' + j].o = 0; });
+      s.zHere.o = 1;
+    });
+    // ...whose keys fly back out to where they landed
+    S.beat(0.4, (s) => { kg.cellIds(ZHI, ZHJ).forEach((id) => { s[id].o = 0; }); L.keys.forEach((k, i) => { s['k' + i].o = 1; }); s.zHere.o = 0; });
+    S.beat(1.6, (s) => {
+      L.keys.forEach((k, i) => Object.assign(s['k' + i], { x: k.dest.x, y: k.dest.y, r: 4.6 }));
+      for (let i = 0; i < 4; i++) LABELS.forEach((p) => { s[p + i].o = 1; });
+      for (let c = 0; c < total; c++) s['d' + c].o = 1;
+      s.cfgTag.o = 1; s.cfgTxt.o = 1;
+    }, keyFly);
     S.beat(0.9, (s) => {
       L.keys.forEach((k, i) => { if (k.ci < 2) s['k' + i].o = 0.18; else { s['k' + i].r = 7; s['k' + i].fill = GOLD_D; } });
       for (let c = 0; c < total; c++) if (L.where[c].ci < 2) s['d' + c].o = 0.25;
@@ -3113,17 +3188,15 @@ By the averages, it's reassuring: about one key in 40 to 70 thousand, at every r
 But the average is the wrong number to take comfort from. Look at the last column. At rotation 0, exactly one key out of 16.8 million lands on a cycle of four rounds: its entire stream repeats after 16 cards. At rotation 3, two keys do. For whoever picks that key, it isn't weak, it's catastrophic.
 
 So any real deployment needs a key check: reject a key whose starting state is on a short cycle, before encrypting anything. Whether a person with a deck of cards could do that check by hand is an open and genuinely practical question.`);
-  // Simplified 2026-10-05: the percentage column went, since "about 1 key in" says the same thing more plainly.
+  // Simplified 2026-10-05: the percentage column went, since "about 1 key in" says the same thing more plainly; then the
+  // "16 cards" card went too (Scott), so the slide hones in on the four rotations tested at 8 cards, in a full-width
+  // table. The 16-card worst case is in the notes and the table's last column.
   const rows = [['Rotation', 'Weak keys: about 1 in', 'Shortest cycle a real key reaches'],
     ['0', '65,028', '4 rounds'], ['1', '48,913', '225 rounds'], ['3', '40,041', '4 rounds'], ['5', '71,392', '289 rounds']];
   s.addTable(rows.map((r, i) => r.map((c, j) => ({ text: c, options: { bold: i === 0 || (j === 2 && c.startsWith('4 ')), color: j === 2 && c.startsWith('4 ') ? C.accent1 : C.text1,
     align: j === 0 ? 'center' : (j === 2 ? 'left' : 'right'), fill: { color: i === 0 ? C.background2 : C.background1 } } }))),
-  { x: 0.5, y: 1.45, w: 7.4, colW: [1.35, 2.6, 3.45], rowH: 0.62, fontFace: 'Calibri', fontSize: 18, border: { type: 'solid', pt: 0.75, color: 'D9D9D9' }, valign: 'middle', margin: [0, 0.14, 0, 0.14] });
-  s.addText('8 cards per deck. A key counts as weak if its cycle is shorter than 40,320 rounds.', { x: 0.5, y: 4.75, w: 7.4, h: 0.5, margin: 0, fontFace: 'Calibri', fontSize: 15, color: C.accent6, isTextBox: true });
-  card(s, { x: 8.3, y: 1.45, w: 4.53, h: 3.8, rank: '4', suit: 'H', fill: C.background2 });
-  s.addText([{ text: '16 cards', options: { bold: true, fontSize: 40, color: C.accent1, breakLine: true } },
-    { text: 'At rotation 0, one key in 16.8 million repeats its whole stream after 4 rounds: 16 cards, 48 bits. At rotation 3, two keys do.', options: { fontSize: 17, color: C.text1 } }],
-  { x: 8.92, y: 1.65, w: 3.7, h: 3.45, margin: 0, valign: 'top', fontFace: 'Calibri', isTextBox: true, paraSpaceAfter: 6 });
+  { x: 0.5, y: 1.45, w: 12.333, colW: [2.6, 4.6, 5.133], rowH: 0.66, fontFace: 'Calibri', fontSize: 22, border: { type: 'solid', pt: 0.75, color: 'D9D9D9' }, valign: 'middle', margin: [0, 0.2, 0, 0.2] });
+  s.addText('8 cards per deck: the four rotations tested. A key counts as weak if its cycle is shorter than 40,320 rounds.', { x: 0.5, y: 4.88, w: 12.333, h: 0.5, margin: 0, fontFace: 'Calibri', fontSize: 17, color: C.accent6, isTextBox: true });
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 5.55, w: 12.333, h: 1.25, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'takeaway panel' });
   s.addText([{ text: 'Any deployment needs a key check before use. ', options: { bold: true, color: C.accent1 } }, { text: 'Whether a person with a deck of cards could perform one is an open, practical question.', options: { color: C.text1 } }],
     { x: 0.85, y: 5.6, w: 11.7, h: 1.15, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 20, isTextBox: true });
