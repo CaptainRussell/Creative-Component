@@ -724,6 +724,7 @@
     growth: 'States per Deck Size – Explosive Growth',
     shares: 'A few giant cycles hold almost every state',
     rotation: 'Rotation’s Impact on Cycle Size',
+    analysis: 'Rotation Analysis at 8 Deck Size',
     keys: 'How a Key Picks Its Cycle',
     land: 'Where all 256 keys land',
   };
@@ -2002,7 +2003,7 @@
     S.cuts = [];                  // where each slide after the first begins (see partsOf)
     chrome(S);
     // in slide order; scope makes the grid (S.grid) that the later parts use, so it is built before them
-    const parts = [buildLoops(S), buildScope(S), buildGrowth(S), buildShares(S), buildRotation(S)];
+    const parts = [buildLoops(S), buildScope(S), buildGrowth(S), buildShares(S), buildRotation(S), buildAnalysis(S)];
     parts.forEach((steps, k) => { if (k) S.cuts.push(S.steps.length); steps(); });
     return S;
   }
@@ -2149,6 +2150,65 @@
       S.beat(0.6, (s) => { s.rotBx.o = 1; });
       S.beat(0.6, (s) => { s.why.o = 1; });
       S.hold(0.3);
+    };
+  }
+
+  // ---- analysis
+  // The rotation analysis grows out of the rotation slide's last frame (Scott, 2026-10-05): the four rotation labels
+  // become the four cards' titles, the largest-cycle shares leave their bars and the shortest-cycle values their column
+  // for the cards, and the typical periods join them. The next click marks rotation 5, the recommendation; the weak
+  // keys are left for Part 4.
+  function buildAnalysis(S) {
+    const { CONFIGS } = S.grid, I = 2, CW = 417, CY = 30, CH = 660, CX = [0, 1, 2, 3].map((j) => 72 + j * (CW + 36));
+    const LY = [220, 350, 480], VY = [262, 392, 522], LBL = ['Typical period (rounds)', 'Largest cycle holds', 'Shortest reachable cycle'];
+    const PERIOD = ['649 million', '518 million', '769 million', '1,038 million'], RV = ['0', '1', '3', '5'];
+    const mid = (j) => CX[j] + CW / 2 + 20;      // a card's title and badge, centred right of its corner index
+    for (let j = 0; j < 4; j++) {
+      const red = j % 2 === 1, col = red ? RED : INK, x = CX[j];
+      S.add('anC' + j, 'rect', {}, { x, y: CY, w: CW, h: CH, rx: 16, fill: '#FFFFFF', stroke: '#CFCFCF', sw: 2, o: 0, z: 1 });
+      S.add('anR' + j, 'text', { size: 34, weight: 700, family: root.Anim.SERIF }, { x: x + 22, y: CY + 52, content: RV[j], fill: col, o: 0, z: 3 });
+      S.add('anS' + j, 'text', { size: 28, family: 'Segoe UI Symbol, Arial' }, { x: x + 23, y: CY + 88, content: red ? '♥' : '♠', fill: col, o: 0, z: 3 });
+      LBL.forEach((t, m) => S.add(`anL${j}${m}`, 'text', { size: 22 }, { x: x + 32, y: CY + LY[m], content: t, fill: GREY, o: 0, z: 3 }));
+      S.add('anP' + j, 'text', { size: 32, weight: 700 }, { x: x + 32, y: CY + VY[0], content: PERIOD[j], o: 0, z: 3 });
+      S.add('anG' + j, 'text', { size: 32, weight: 700 }, { x: x + 32, y: CY + VY[1], content: `${(CONFIGS[I].cells[j][0] * 100).toFixed(1)}%`, o: 0, z: 3 });
+    }
+    S.add('anB', 'rect', {}, { x: mid(3) - 150, y: CY + 94, w: 300, h: 52, rx: 10, fill: RED, sw: 0, o: 0, z: 3 });
+    S.add('anBT', 'text', { size: 26, weight: 700, anchor: 'middle' }, { x: mid(3), y: CY + 129, content: 'Recommended', fill: '#FFFFFF', o: 0, z: 4 });
+    // what the rotation slide leaves on screen that the cards don't keep
+    const gone = ['rotBx', 'why', 'rHead', 'kH'];
+    for (let j = 0; j < 4; j++) {
+      gone.push('rg' + j, `z2${j}n`, `z2${j}c`);
+      for (let k = 0; k < 4; k++) { gone.push(`z2${j}a${k}`, `rr${j}${k}`); if (k) gone.push(`rr${j}${k}t`); }
+    }
+    const byCard = (id) => { const m = id.match(/^(?:an[A-Z]|zCol|kV|rr)(\d)/); if (!m) return null; const a = +m[1] * 0.08; return { w: [a, a + 0.72] }; };
+    return () => {
+      // ---- step 0: the rotation slide's four rows turn into four cards
+      S.step({ say: 'Putting it together at eight cards. Here are the four rotations side by side: the typical period, which is how long a typical stream runs before it repeats; the share of all states in the largest cycle; and the shortest cycle a real key can reach.' });
+      S.beat(0.45, (s) => cap(s, 'The four rotations, side by side',
+        'At 8 cards: how long a typical stream runs, how big the largest cycle is, and the shortest cycle a real key reaches.\nFour of the 8 possible rotations; this says nothing about randomness or about 26 cards.'));
+      S.beat(0.6, (s) => {
+        gone.forEach((k) => { if (s[k]) s[k].o = 0; });
+        for (let j = 0; j < 4; j++) s[`rr${j}0t`].fill = INK;     // off its red bar, the share turns dark
+      });
+      S.beat(1.4, (s) => {
+        for (let j = 0; j < 4; j++) {
+          ['anC', 'anR', 'anS'].forEach((p) => { s[p + j].o = 1; });
+          for (let m = 0; m < 3; m++) s[`anL${j}${m}`].o = 1;
+          Object.assign(s['zCol' + j], { x: mid(j), y: CY + 64, content: `Rotation ${RV[j]}`, s: 1.33, z: 4 });
+          Object.assign(s[`rr${j}0t`], { x: CX[j] + 32 + 43, y: CY + VY[1], s: 1.333, z: 6 });
+          Object.assign(s['kV' + j], { x: CX[j] + 32, y: CY + VY[2], z: 4 });
+        }
+      }, byCard);
+      S.beat(0.25, (s) => { for (let j = 0; j < 4; j++) { s[`rr${j}0t`].o = 0; s['anG' + j].o = 1; } });   // the same number, left-aligned
+      S.beat(0.6, (s) => { for (let j = 0; j < 4; j++) s['anP' + j].o = 1; }, byCard);
+      S.hold(0.3);
+
+      // ---- step 1: the recommendation
+      S.step({ say: 'Rotation 5 is the one I recommend: the biggest dominant cycle, 78 percent of all states; the longest typical period, about a billion rounds; and the highest floor. Rotations 0 and 3 each let a real key onto a four-round cycle. Three honest limits: it is the best of four tested, out of eight possible at this size; at six cards the criteria disagree; and it says nothing about randomness, or about the full 26-card deck.' });
+      S.beat(0.45, (s) => cap(s, 'Rotation 5: the one I recommend',
+        'The biggest cycle, 78.4% of all states; the longest typical period; and no real key reaches a cycle under 289 rounds.\nAt 6 cards these criteria point to different rotations, so this is a finding for 8 cards.'));
+      S.beat(0.7, (s) => { Object.assign(s.anC3, { fill: '#F3F3F3', stroke: RED, sw: 4 }); s.anB.o = 1; s.anBT.o = 1; });
+      S.hold(0.4);
     };
   }
 
@@ -2544,6 +2604,7 @@
       { name: 'growth', title: TITLES.growth, build: () => cyclesPart('growth', 2) },
       { name: 'shares', title: TITLES.shares, build: () => cyclesPart('shares', 3) },
       { name: 'rotation', title: TITLES.rotation, build: () => cyclesPart('rotation', 4) },
+      { name: 'analysis', title: TITLES.analysis, build: () => cyclesPart('analysis', 5) },
       { name: 'keys', title: TITLES.keys, build: () => keysPart('keys', 0) },
       { name: 'land', title: TITLES.land, build: () => keysPart('land', 1) },
     ],
@@ -3102,35 +3163,9 @@ animation('scope', 50);
 animation('growth', 60);
 animation('shares', 60);
 animation('rotation', 90);
-{
-  // Moved here from Key Analysis at Scott's request (2026-10-05): it draws the rotation slide's conclusion. The weak-key
-  // row is left out: weak keys come in Part 4 (the weak-keys slide has them by rotation).
-  const s = slide('CONTENT', 'Rotation Analysis at 8 Deck Size', 45, `
-Putting it together at eight cards. Rotation 5 is the one I recommend: it has the biggest dominant cycle, 78 percent of all states, the longest typical period, about a billion rounds, and the highest floor. Rotations 0 and 3 each let a real key onto a four-round cycle.
-
-Three honest limits on that recommendation. It's the best of four tested, out of eight possible at this size. At six cards the two criteria actually disagree. And it says nothing about randomness, or about the full 26-card deck.`);
-  const cols = [['0', 'Ruled out', '649 million', '44.8%', '4'], ['1', 'Alternative', '518 million', '48.0%', '225'],
-    ['3', 'Ruled out', '769 million', '65.7%', '4'], ['5', 'Recommended', '1,038 million', '78.4%', '289']];
-  const labels = ['Typical period (rounds)', 'Largest cycle holds', 'Shortest reachable cycle'];
-  const w = 2.83, g = 0.27;
-  cols.forEach(([r, verdict, per, big, floor], i) => {
-    const x = 0.5 + i * (w + g), y = 1.4, h = 4.3, rec = verdict === 'Recommended', out = verdict === 'Ruled out';
-    card(s, { x, y, w, h, rank: r, suit: i % 2 ? 'H' : 'S', fill: rec ? C.background2 : undefined, line: rec ? C.accent1 : undefined });
-    s.addText(`Rotation ${r}`, { x: x + 0.62, y: y + 0.12, w: w - 0.75, h: 0.45, margin: 0, fontFace: 'Calibri', fontSize: 20, bold: true, color: C.text1, isTextBox: true });
-    // only the recommendation carries a badge (Scott, 2026-10-05); he talks to it from the numbers
-    if (rec) {
-      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, rectRadius: 0.08, fill: { color: C.accent1 }, line: { color: C.accent1, width: 0 }, objectName: 'verdict badge' });
-      s.addText(verdict, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, margin: 0, align: 'center', valign: 'middle', fontFace: 'Calibri', fontSize: 15, bold: true, color: C.background1, isTextBox: true });
-    }
-    [per, big, floor].forEach((v, k) => {
-      const bad = k === 2 && out;
-      s.addText([{ text: labels[k], options: { fontSize: 13, color: C.accent6, breakLine: true } }, { text: v, options: { fontSize: 19, bold: true, color: bad ? C.accent1 : C.text1 } }],
-        { x: x + 0.22, y: y + 1.3 + k * 0.95, w: w - 0.4, h: 0.75, margin: 0, valign: 'top', fontFace: 'Calibri', isTextBox: true });
-    });
-  });
-  s.addText('Best of the 4 rotations tested, out of 8 possible at 8 cards. At 6 cards the two criteria disagree. Says nothing about randomness or about 26 cards.',
-    { x: 0.5, y: 5.95, w: 12.33, h: 0.6, margin: 0, fontFace: 'Calibri', fontSize: 17, italic: true, color: C.accent6, valign: 'middle', isTextBox: true });
-}
+// Rotation Analysis at 8 Deck Size, moved here from Key Analysis (2026-10-05) as the rotation slide's conclusion, then
+// made the sixth part of the cycles animation so it grows out of that slide's last frame (Scott, 2026-10-05).
+animation('analysis', 45);
 {
   // The chapter brought back together, like part 2's summary (2026-10-04). Since 2026-10-05 it has one bullet per
   // animation slide, each with a small picture of that animation (Scott), then the bridge.
