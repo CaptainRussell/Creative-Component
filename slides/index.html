@@ -732,6 +732,12 @@
     S.add('capBody', 'text', { size: 26, lh: 1.32 }, { x: 106, y: 843, fill: '#333333', z: 5 });
   }
   function cap(s, head, body) { s.capHead.content = head; s.capBody.content = body || ''; }
+  // Which configuration a slide shows, top right. The cycles slide's tag, also on the two key slides, whose four
+  // cycles are the same 4-card example (Scott, 2026-10-05).
+  function cfgTag(S) {
+    S.add('cfgTag', 'rect', {}, { x: 1394, y: 18, w: 454, h: 52, rx: 26, fill: '#F3F3F3', sw: 0 });
+    S.add('cfgTxt', 'text', { size: 22, weight: 700, anchor: 'middle' }, { x: 1621, y: 53, content: `${N} cards per deck · rotation r = ${ROT}` });
+  }
 
   // Cycle data for deck 4, rotation 3. The largest loop starts at the worked
   // example's first boundary state (code 254) so "State 1" sits at 12 o'clock.
@@ -1551,8 +1557,7 @@
     S.add('arr12', 'arrow', {}, { x: 730, y: 391, x2: 1190, y2: 391, draw: 0, stroke: INK, sw: 5, head: 22, z: 19 });
     S.add('arrLbl', 'text', { size: 28, anchor: 'middle', italic: true }, { x: 960, y: 366, content: 'one round', fill: GREY, o: 0 });
     // Which configuration this is, on every step: later slides change the deck size and the rotation.
-    S.add('cfgTag', 'rect', {}, { x: 1394, y: 18, w: 454, h: 52, rx: 26, fill: '#F3F3F3', sw: 0 });
-    S.add('cfgTxt', 'text', { size: 22, weight: 700, anchor: 'middle' }, { x: 1621, y: 53, content: `${N} cards per deck · rotation r = ${ROT}` });
+    cfgTag(S);
 
     // The opening picture is the breakdown's State 1 as round 1 left it (the same rows, cards and gold box), so the
     // tiles are visibly the states worked out by hand: the decks shrink onto the State 1 tile, then the same cards
@@ -2128,6 +2133,7 @@
     const sx = (i) => X0 + i * P;
     const L = loopData();
     chrome(S);
+    cfgTag(S);
 
     const KEY1 = 'BAAD', KEY2 = 'ABBA';
     const ks1 = C.keySchedule(START_DRIVE, START_SEARCH, KEY1, '');
@@ -2143,7 +2149,7 @@
       S.add('kl' + i, 'text', { size: 54, weight: 700, anchor: 'middle', family: root.Anim.SERIF }, { x: sx(i) + 58, y: 104, content: KEY1[i] });
       S.add('kv' + i, 'text', { size: 23, anchor: 'middle' }, { x: sx(i) + 58, y: 162, content: '= ' + (KEY1.charCodeAt(i) - 65), fill: GREY });
     }
-    S.add('kLegend', 'text', { size: 22 }, { x: 1000, y: 96, content: ['A = 0', 'B = 1', 'C = 2', 'D = 3'].join(GAP), fill: GREY });
+    S.add('kLegend', 'text', { size: 22 }, { x: 1000, y: 96, content: ['A = 0', 'B = 1', 'C = 2', 'D = 3'].join(GAP), fill: GREY, z: 60 });
     const rowLabel = (key, title, sub, y) => {
       S.add(key + 'T', 'text', { size: 27, weight: 700, ls: 1.5 }, { x: 72, y, content: title });
       S.add(key + 'S', 'text', { size: 21 }, { x: 72, y: y + 32, content: sub, fill: GREY });
@@ -2178,13 +2184,17 @@
       S.add('mrs' + i, 'text', { size: [22, 17, 16, 16][i], anchor: 'middle' },
         { x: m.cx, y: y + [32, 23, 20, 20][i], content: `${L.cyc[i].length} States`, fill: GREY, o: 0 });
     });
-    S.add('mrT', 'text', { size: 25, weight: 700 }, { x: OX, y: 252, content: 'The four cycles from earlier', o: 0 });
+    S.add('mrT', 'text', { size: 25, weight: 700 }, { x: OX, y: 252, content: 'The four cycles from earlier', o: 0, z: 60 });
     const mpos = (code) => { const w = L.where[code], m = MR[w.ci], a = -Math.PI / 2 + (2 * Math.PI * w.k) / L.cyc[w.ci].length; return { x: m.cx + m.r * Math.cos(a), y: m.cy + m.r * Math.sin(a), ci: w.ci, a }; };
-    const p1 = mpos(c1), p2 = mpos(c2);
-    S.add('mk1', 'dot', {}, { x: 682, y: 470, r: 14, fill: GOLD, stroke: INK, sw: 3, o: 0, z: 50 });
+    const p1 = mpos(c1), p2 = mpos(c2), ARC1 = 125, ARC2 = 120;     // high enough to clear the tiles
+    // Each key's marker comes out of the key itself (Scott, 2026-10-05): it starts as a gold frame around the key.
+    const KC = { x: (sx(1) + sx(2)) / 2 + 58, y: 84 }, KTOP = 22;
+    const FRAME = { x: sx(0) - 6, y: 29, w: sx(3) - sx(0) + 128, h: 110, rx: 20, fill: GOLD, fo: 0, stroke: GOLD_D, sw: 5 };
+    const dotAt = (x, y) => ({ x: x - 14, y: y - 14, w: 28, h: 28, rx: 14 });
+    S.add('mk1', 'rect', {}, Object.assign({}, FRAME, { o: 0, z: 50 }));
     S.add('mk1L', 'text', { size: 27, weight: 700, anchor: Math.cos(p1.a) >= 0 ? 'start' : 'end', family: root.Anim.SERIF },
       { x: p1.x + 34 * Math.cos(p1.a), y: p1.y + 34 * Math.sin(p1.a) + 9, content: KEY1, o: 0, z: 50 });
-    S.add('mk2', 'dot', {}, { x: 682, y: 470, r: 14, fill: GOLD, stroke: INK, sw: 3, o: 0, z: 50 });
+    S.add('mk2', 'rect', {}, Object.assign({}, FRAME, { o: 0, z: 50 }));
     S.add('mk2L', 'text', { size: 27, weight: 700, anchor: 'start', family: root.Anim.SERIF }, { x: MR[p2.ci].cx + 40, y: MR[p2.ci].cy + 10, content: KEY2, o: 0, z: 50 });   // level with the ring, clear of its label below
 
     START_DRIVE.forEach((id, i) => S.add(id, 'card', { suit: 'S', v: C.val(id), w: CARD_W, h: CARD_H }, { x: sx(i), y: Y.drive, z: 10 }));
@@ -2211,6 +2221,16 @@
       });
     }
     const resetKeyTiles = (s) => { for (let i = 0; i < 4; i++) { s['kt' + i].fill = '#FFFFFF'; s['kt' + i].sw = 2.5; s['kt' + i].stroke = CHAR; s['hl' + i].o = 0; } };
+    // the whole key lit, as one letter is lit during the schedule
+    const lightKey = (s) => { for (let i = 0; i < 4; i++) { s['kt' + i].fill = GOLD; s['kt' + i].sw = 2.5; s['kt' + i].stroke = CHAR; } };
+    // The key lights up inside its frame, the frame condenses into the key's dot between the middle letters, and the dot
+    // rises out of the key and flies to its state's place on the map.
+    function keyDot(mk, p, arc, fly) {
+      S.beat(0.45, (s) => { lightKey(s); s[mk].o = 1; });
+      S.beat(0.55, (s) => Object.assign(s[mk], dotAt(KC.x, KC.y), { stroke: INK, sw: 3 }));
+      S.beat(0.3, (s) => Object.assign(s[mk], { y: KTOP - 14, fo: 1 }));
+      S.beat(fly, (s) => Object.assign(s[mk], { x: p.x - 14, y: p.y - 14 }), (id) => (id === mk ? { arc } : null));
+    }
 
     // ---- step 0
     S.step({ say: 'So where does a starting arrangement come from? From the key. A key is just a word, here B-A-A-D, and each letter becomes a number. Both decks start in order.' });
@@ -2243,8 +2263,7 @@
     });
     S.beat(0.4, (s) => { s.stageLbl.content = 'FIRST STATE OF KEY BAAD'; });
     S.beat(0.9, (s) => { s.mrT.o = 1; MR.forEach((m, i) => { s['mr' + i].o = 1; s['mr' + i].draw = 1; s['mrl' + i].o = 1; s['mrs' + i].o = 1; }); });
-    S.beat(0.3, (s) => { s.mk1.o = 1; });
-    S.beat(1.1, (s) => { s.mk1.x = p1.x; s.mk1.y = p1.y; }, (id) => (id === 'mk1' ? { arc: 120 } : null));
+    keyDot('mk1', p1, ARC1, 1.2);
     S.beat(0.4, (s) => { s.mk1L.o = 1; });
     S.hold(0.3);
 
@@ -2254,6 +2273,7 @@
       cap(s, `A different key, ABBA, lands on Cycle #${L.where[c2].ci + 1}: only 11 states`,
         'Same schedule, same round, different word. ABBA’s secret stream would repeat after just 11 rounds.\nNothing about the letters warns you: a weak key is weak because of where it lands, not how it looks.');
       for (let i = 0; i < 4; i++) { s['kl' + i].content = KEY2[i]; s['kv' + i].content = '= ' + (KEY2.charCodeAt(i) - 65); }
+      resetKeyTiles(s);
       s.stageLbl.content = 'BACK TO THE START';
     });
     S.beat(0.8, (s) => { START_DRIVE.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; }); START_SEARCH.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; }); });
@@ -2274,8 +2294,8 @@
       fr2.drive.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; });
       fr2.search.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; });
     });
-    S.beat(0.3, (s) => { s.stageLbl.content = 'FIRST STATE OF KEY ABBA'; s.mk2.o = 1; });
-    S.beat(1.1, (s) => { s.mk2.x = p2.x; s.mk2.y = p2.y; }, (id) => (id === 'mk2' ? { arc: 120 } : null));
+    S.beat(0.3, (s) => { s.stageLbl.content = 'FIRST STATE OF KEY ABBA'; });
+    keyDot('mk2', p2, ARC2, 1.3);
     S.beat(0.4, (s) => { s.mk2L.o = 1; s.mr2.sw = 9; });
     S.hold(0.4);
     return S;
@@ -2286,6 +2306,7 @@
     const S = new Scene('land', TITLES.land);
     const L = loopData(), geo = ringGeo(L.cyc), total = L.nxt.length;
     chrome(S);
+    cfgTag(S);
 
     geo.forEach((g, i) => S.add('guide' + i, 'ring', {}, { x: g.cx, y: g.cy, r: g.r, stroke: LIGHT, sw: 2 }));
     for (let code = 0; code < total; code++) {
@@ -2519,6 +2540,31 @@ const svgPic = (body) => ({ data: 'data:image/svg+xml;charset=utf-8,' + encodeUR
 // the 4-card example's four cycles, sized by their states (the Part 3 summary and the Recap)
 const PIC_RINGS = '<circle cx="50" cy="60" r="38" fill="none" stroke="#C8102E" stroke-width="7"/><circle cx="116" cy="60" r="20" fill="none" stroke="#4A4A4A" stroke-width="5"/>'
   + '<circle cx="158" cy="42" r="7" fill="none" stroke="#C99400" stroke-width="3"/><circle cx="158" cy="80" r="7" fill="none" stroke="#C99400" stroke-width="3"/>';
+// Part 3's five animations, one picture each: the overview previews them and the summary brings them back.
+const PIC_PART3 = (() => {
+  const RED = 'C8102E', CHAR = '4A4A4A', GOLD = 'C99400', GOLDL = 'F1BE48', SEG = [RED, CHAR, GOLD, GOLD];
+  const arc = (cx, cy, r, sw, col, start, share) => {
+    const L = 2 * Math.PI * r;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#${col}" stroke-width="${sw}" stroke-dasharray="${(L * Math.max(0, share - 0.012)).toFixed(2)} ${L.toFixed(2)}" transform="rotate(${(-90 + 360 * start).toFixed(1)} ${cx} ${cy})"/>`;
+  };
+  const donut = (cx, cy, r, sw, cell) => { let c = 0; return cell.map((v, k) => { const a = arc(cx, cy, r, sw, SEG[k], c, v); c += v; return a; }).join(''); };
+  const bar = (x, y, w, h, cell) => { let c = 0; return cell.map((v, k) => { const b = `<rect x="${(x + c * w).toFixed(1)}" y="${y}" width="${Math.max(0, v * w - 2).toFixed(1)}" height="${h}" rx="2" fill="#${SEG[k]}"/>`; c += v; return b; }).join(''); };
+  // cycle shares (largest, second, third, the rest) for 4, 6 and 8 cards at rotations 0, 1, 3, 5, as in the animation
+  const GRID = [[[0.7153, 0.2326, 0.0486, 0.0035], [0.5799, 0.3021, 0.0729, 0.0451], [381 / 576, 173 / 576, 11 / 576, 11 / 576], [0.5799, 0.3021, 0.0729, 0.0451]],
+    [[0.8028, 0.1876, 0.0068, 0.0028], [0.4244, 0.2473, 0.2209, 0.1074], [0.7220, 0.1863, 0.0545, 0.0373], [0.8539, 0.1185, 0.0271, 0.0006]],
+    [[0.4483, 0.4383, 0.0730, 0.0405], [0.4802, 0.2160, 0.1809, 0.1228], [0.6572, 0.1690, 0.0939, 0.0798], [0.7840, 0.1498, 0.0232, 0.0430]]];
+  return {
+    rings: { alt: 'The four cycles of the 4-card example', pic: svgPic(PIC_RINGS) },
+    grid: { alt: 'The grid of 12 configurations',
+      pic: svgPic(GRID.map((row, i) => row.map((cell, j) => donut(27 + j * 42, 22 + i * 38, 12, 6, cell)).join('')).join('') + `<rect x="89" y="3" width="44" height="38" rx="6" fill="none" stroke="#${GOLDL}" stroke-width="3"/>`) },
+    growth: { alt: 'Each deck size’s square holding the last one as a single block',
+      pic: svgPic(`<rect x="38" y="6" width="108" height="108" fill="none" stroke="#${CHAR}" stroke-width="2.5" stroke-dasharray="7 5"/><rect x="38" y="6" width="66" height="66" fill="#${CHAR}" fill-opacity="0.35"/><rect x="38" y="6" width="26" height="26" fill="#${CHAR}"/><rect x="38" y="6" width="8" height="8" fill="#${RED}"/>`) },
+    giants: { alt: 'Bars of cycle shares at 4, 6 and 8 cards',
+      pic: svgPic(bar(10, 16, 160, 20, GRID[0][0]) + bar(10, 50, 160, 20, GRID[1][0]) + bar(10, 84, 160, 20, GRID[2][0])) },
+    rotation: { alt: 'Bars of cycle shares at each rotation, 8 cards',
+      pic: svgPic(GRID[2].map((cell, j) => bar(10, 10 + j * 27, 160, 17, cell)).join('')) },
+  };
+})();
 
 // The renderer decides what an animation slide is (GIF steps, a cue slide, or live).
 const animation = (name, budget) => api.animation(name, budget, { slide, C, pres });
@@ -2757,23 +2803,27 @@ newSection('Daniels’ Cipher: Cycle Structure (Ch 4)');
 divider('3', 'S', 'Daniels’ Cipher: Cycle Structure', 'Chapter 4', 'Part three: the cycle structure, how every state falls into a cycle and how large those cycles are. (One breath.)');
 {
   // How the chapter goes, like part 2's overview (2026-10-04), simplified 2026-10-05: three ideas in plain words and
-  // the one line to remember. No picture: the cycles have not been explained yet (the summary has one picture per
-  // animation). Each word (state, cycle, configuration) is defined on the slide that first uses it.
+  // the one line to remember. Each idea shows the summary's pictures of its animations beside its number (Scott,
+  // 2026-10-05), so the part opens and closes on the same pictures. Each word (state, cycle, configuration) is defined
+  // on the slide that first uses it.
   const s = slide('CONTENT', 'Cycle Structure: Overview', 40, `
 Here's how this part goes: the big picture, the details, then a summary, like the last part.
 
 The big picture: every round takes the decks from one state to the next, and every step can be undone, so the states fall into separate cycles. A stream repeats when its cycle comes back around, so the size of the cycles is what matters.
 
-Three ideas. First, why every state lands in a cycle. Second, counting every state: the twelve configurations I counted, and how fast the number of states grows with the deck size. Third, what the cycles show: a few giant cycles hold almost every state, and the rotation setting reshapes them.`);
-  const ideas = [['1', 'Every state lands in a cycle', 'Each state leads to exactly one next state, so the states form separate cycles.'],
-    ['2', 'Every state, counted', 'All 12 configurations, from 576 states at 4 cards to 1.6 billion at 8.'],
-    ['3', 'What the cycles show', 'A few giant cycles hold almost every state, and the rotation setting reshapes them.']];
+Three ideas. First, why every state lands in a cycle. Second, counting every state: the twelve configurations I counted, and how fast the number of states grows with the deck size. Third, what the cycles show: a few giant cycles hold almost every state, and the rotation setting reshapes them.
+
+The small pictures are the animations coming up; the summary brings them back.`);
+  const ideas = [['1', 'Every state lands in a cycle', 'Each state leads to exactly one next state, so the states form separate cycles.', [PIC_PART3.rings]],
+    ['2', 'Every state, counted', 'All 12 configurations, from 576 states at 4 cards to 1.6 billion at 8.', [PIC_PART3.grid, PIC_PART3.growth]],
+    ['3', 'What the cycles show', 'A few giant cycles hold almost every state, and the rotation setting reshapes them.', [PIC_PART3.giants, PIC_PART3.rotation]]];
   const w = 3.94, g = 0.26;
-  ideas.forEach(([n, h1, d], i) => {
+  ideas.forEach(([n, h1, d, pics], i) => {
     const x = 0.5 + i * (w + g), y = 1.45;
     card(s, { x, y, w, h: 3.7 });     // plain panels: these are ideas, not cards
     s.addShape(pres.shapes.OVAL, { x: x + 0.3, y: y + 0.3, w: 0.8, h: 0.8, fill: { color: C.accent1 }, line: { color: C.accent1, width: 1 }, objectName: 'idea marker' });
     s.addText(n, { x: x + 0.3, y: y + 0.3, w: 0.8, h: 0.8, margin: 0, align: 'center', valign: 'middle', fontFace: 'Cambria', fontSize: 28, bold: true, color: C.background1, isTextBox: true });
+    pics.forEach((p, k) => s.addImage(Object.assign({ x: x + 1.25 + k * 1.22, y: y + 0.32, w: 1.14, h: 0.76, altText: p.alt, objectName: 'idea picture' }, p.pic)));
     s.addText([{ text: h1, options: { bold: true, fontSize: 24, color: C.text1, breakLine: true } }, { text: d, options: { fontSize: 19, color: C.accent6 } }],
       { x: x + 0.3, y: y + 1.35, w: w - 0.6, h: 2.2, margin: 0, valign: 'top', fontFace: 'Calibri', isTextBox: true, paraSpaceAfter: 6 });
   });
@@ -2806,30 +2856,13 @@ Four: a few giant cycles hold almost every state, then a tail of small cycles, w
 Five: the rotation setting reshapes the cycles: at eight cards the largest one grows from 45 to 78 percent of all states.
 
 What decides which cycle a stream runs on is where its key starts. That's the key analysis, right after a quick recap.`);
-  // The pictures are SVG, shown like any other image: miniatures of the animations, in their colours.
-  const RED = 'C8102E', CHAR = '4A4A4A', GOLD = 'C99400', GOLDL = 'F1BE48', SEG = [RED, CHAR, GOLD, GOLD];
-  const pic = svgPic;
-  const arc = (cx, cy, r, sw, col, start, share) => {
-    const L = 2 * Math.PI * r;
-    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#${col}" stroke-width="${sw}" stroke-dasharray="${(L * Math.max(0, share - 0.012)).toFixed(2)} ${L.toFixed(2)}" transform="rotate(${(-90 + 360 * start).toFixed(1)} ${cx} ${cy})"/>`;
-  };
-  const donut = (cx, cy, r, sw, cell) => { let c = 0; return cell.map((v, k) => { const a = arc(cx, cy, r, sw, SEG[k], c, v); c += v; return a; }).join(''); };
-  const bar = (x, y, w, h, cell) => { let c = 0; return cell.map((v, k) => { const b = `<rect x="${(x + c * w).toFixed(1)}" y="${y}" width="${Math.max(0, v * w - 2).toFixed(1)}" height="${h}" rx="2" fill="#${SEG[k]}"/>`; c += v; return b; }).join(''); };
-  // cycle shares (largest, second, third, the rest) for 4, 6 and 8 cards at rotations 0, 1, 3, 5, as in the animation
-  const GRID = [[[0.7153, 0.2326, 0.0486, 0.0035], [0.5799, 0.3021, 0.0729, 0.0451], [381 / 576, 173 / 576, 11 / 576, 11 / 576], [0.5799, 0.3021, 0.0729, 0.0451]],
-    [[0.8028, 0.1876, 0.0068, 0.0028], [0.4244, 0.2473, 0.2209, 0.1074], [0.7220, 0.1863, 0.0545, 0.0373], [0.8539, 0.1185, 0.0271, 0.0006]],
-    [[0.4483, 0.4383, 0.0730, 0.0405], [0.4802, 0.2160, 0.1809, 0.1228], [0.6572, 0.1690, 0.0939, 0.0798], [0.7840, 0.1498, 0.0232, 0.0430]]];
+  // The pictures are SVG, shown like any other image: miniatures of the animations, in their colours (PIC_PART3).
   const rows = [
-    { head: 'Every state lands in exactly one cycle', body: 'Every step can be undone, so states never merge into each other.', alt: 'The four cycles of the 4-card example',
-      pic: pic(PIC_RINGS) },
-    { head: 'All 12 configurations, every state counted', body: '4, 6 and 8 cards per deck, each at four rotation settings: about 6.5 billion states.', alt: 'The grid of 12 configurations',
-      pic: pic(GRID.map((row, i) => row.map((cell, j) => donut(27 + j * 42, 22 + i * 38, 12, 6, cell)).join('')).join('') + `<rect x="89" y="3" width="44" height="38" rx="6" fill="none" stroke="#${GOLDL}" stroke-width="3"/>`) },
-    { head: 'The number of states explodes with deck size', body: '576 at 4 cards, 518,400 at 6, 1.6 billion at 8; 10 cards is future work.', alt: 'Each deck size’s square holding the last one as a single block',
-      pic: pic(`<rect x="38" y="6" width="108" height="108" fill="none" stroke="#${CHAR}" stroke-width="2.5" stroke-dasharray="7 5"/><rect x="38" y="6" width="66" height="66" fill="#${CHAR}" fill-opacity="0.35"/><rect x="38" y="6" width="26" height="26" fill="#${CHAR}"/><rect x="38" y="6" width="8" height="8" fill="#${RED}"/>`) },
-    { head: 'A few giant cycles hold almost every state', body: 'Then a tail of small cycles: a key that lands there repeats early.', alt: 'Bars of cycle shares at 4, 6 and 8 cards',
-      pic: pic(bar(10, 16, 160, 20, GRID[0][0]) + bar(10, 50, 160, 20, GRID[1][0]) + bar(10, 84, 160, 20, GRID[2][0])) },
-    { head: 'The rotation setting reshapes the cycles', body: 'At 8 cards the largest cycle grows from 45% to 78% of all states.', alt: 'Bars of cycle shares at each rotation, 8 cards',
-      pic: pic(GRID[2].map((cell, j) => bar(10, 10 + j * 27, 160, 17, cell)).join('')) },
+    { head: 'Every state lands in exactly one cycle', body: 'Every step can be undone, so states never merge into each other.', p: PIC_PART3.rings },
+    { head: 'All 12 configurations, every state counted', body: '4, 6 and 8 cards per deck, each at four rotation settings: about 6.5 billion states.', p: PIC_PART3.grid },
+    { head: 'The number of states explodes with deck size', body: '576 at 4 cards, 518,400 at 6, 1.6 billion at 8; 10 cards is future work.', p: PIC_PART3.growth },
+    { head: 'A few giant cycles hold almost every state', body: 'Then a tail of small cycles: a key that lands there repeats early.', p: PIC_PART3.giants },
+    { head: 'The rotation setting reshapes the cycles', body: 'At 8 cards the largest cycle grows from 45% to 78% of all states.', p: PIC_PART3.rotation },
   ];
   rows.forEach((r, i) => { r.y = 1.28 + i * 0.92; });
   rows.slice(0, -1).forEach((r, i) => s.addShape(pres.shapes.RECTANGLE, { x: 0.79, y: r.y + 0.72, w: 0.04, h: rows[i + 1].y - r.y - 0.62,
@@ -2837,7 +2870,7 @@ What decides which cycle a stream runs on is where its key starts. That's the ke
   rows.forEach((r, i) => {
     s.addShape(pres.shapes.OVAL, { x: 0.5, y: r.y + 0.1, w: 0.62, h: 0.62, fill: { color: C.accent1 }, line: { color: C.accent1, width: 1 }, objectName: 'finding marker' });
     s.addText(String(i + 1), { x: 0.5, y: r.y + 0.1, w: 0.62, h: 0.62, margin: 0, align: 'center', valign: 'middle', fontFace: 'Cambria', fontSize: 21, bold: true, color: C.background1, isTextBox: true });
-    s.addImage(Object.assign({ x: 1.38, y: r.y + 0.02, w: 1.17, h: 0.78, altText: r.alt, objectName: 'finding picture' }, r.pic));
+    s.addImage(Object.assign({ x: 1.38, y: r.y + 0.02, w: 1.17, h: 0.78, altText: r.p.alt, objectName: 'finding picture' }, r.p.pic));
     s.addText([{ text: r.head, options: { bold: true, fontSize: 20, color: C.text1, breakLine: true } }, { text: r.body, options: { fontSize: 16, color: C.accent6 } }],
       { x: 2.78, y: r.y + 0.02, w: 10.05, h: 0.78, margin: 0, valign: 'middle', fontFace: 'Calibri', isTextBox: true, paraSpaceAfter: 2 });
   });
@@ -3838,7 +3871,7 @@ else root.DeckContent = { buildSlides };
   // new one, whose animation has already begun. Next or Previous into another part gets the section transition instead,
   // a cue to the room that a new part begins (Scott, 2026-10-05): a cardinal band with gold edges and the four suits
   // sweeps across, and the slide changes behind it. A jump into another part (bar, slide number) cuts straight there.
-  const FADE_MS = 400, SWEEP_MS = 950, calm = matchMedia('(prefers-reduced-motion: reduce)');
+  const FADE_MS = 400, SWEEP_MS = 1900, calm = matchMedia('(prefers-reduced-motion: reduce)');
   function sectionSweep(ghost, dir) {
     const band = document.createElement('div');
     band.className = 'sweep';
