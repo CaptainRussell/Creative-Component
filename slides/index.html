@@ -1623,8 +1623,12 @@
       S.add('ringLbl' + i, 'text', { size: p.s, weight: 700, anchor: p.a }, { x: p.x, y: p.y, content: `Cycle #${i + 1}`, fill: LOOP_COL[i], o: 0 });
       S.add('ringSub' + i, 'text', { size: p.s2, anchor: p.a }, { x: p.x, y: p.y + p.s2 + 12, content: `${L.cyc[i].length} States`, fill: GREY, o: 0 });
     });
-    S.add('s1Mark', 'ring', {}, { x: geo[0].at(0).x, y: geo[0].at(0).y, r: 14, stroke: INK, sw: 3, o: 0, z: 30 });
-    S.add('s1Lbl', 'text', { size: 23, weight: 700, anchor: 'middle' }, { x: geo[0].at(0).x, y: geo[0].at(0).y - 26, content: 'State 1', o: 0, z: 30 });
+    // State 1 and State 2, one round apart, so neighbours on Cycle #1 (Scott, 2026-10-05): one ring holds both dots, with
+    // each name on its own side, so the two states worked out in the breakdown visibly sit side by side on this cycle.
+    const S12 = { x: (geo[0].at(0).x + geo[0].at(1).x) / 2, y: (geo[0].at(0).y + geo[0].at(1).y) / 2 };
+    S.add('s1Mark', 'ring', {}, { x: S12.x, y: S12.y, r: 15, stroke: INK, sw: 3, o: 0, z: 30 });
+    S.add('s1Lbl', 'text', { size: 23, weight: 700, anchor: 'end' }, { x: S12.x - 26, y: S12.y - 14, content: 'State 1', o: 0, z: 30 });
+    S.add('s2Lbl', 'text', { size: 23, weight: 700, anchor: 'start' }, { x: S12.x + 26, y: S12.y - 14, content: 'State 2', o: 0, z: 30 });
 
     // the 576 states as dots: start hidden at their grid cell
     const G0x = 447, G0y = 128, GS = 22;
@@ -1721,7 +1725,7 @@
         s.tile1.x = geo[0].at(0).x - 30; s.tile1.y = geo[0].at(0).y - 20; s.tile1.s = 0.12; s.tile1.o = 0;
         s.tile2.x = geo[0].at(1).x - 30; s.tile2.y = geo[0].at(1).y - 20; s.tile2.s = 0.12; s.tile2.o = 0;
         s.arr12.o = 0; s.arrLbl.o = 0;
-        s.d254.o = 1; s['d' + ring0[1]].o = 1; s.s1Mark.o = 1; s.s1Lbl.o = 1;
+        s.d254.o = 1; s['d' + ring0[1]].o = 1; s.s1Mark.o = 1; s.s1Lbl.o = 1; s.s2Lbl.o = 1;
       });
       S.beat(5.2, (s) => {
         ring0.forEach((c) => { s['d' + c].o = 1; });
@@ -1731,8 +1735,8 @@
         if (id[0] === 'd') { const w = L.where[+id.slice(1)]; if (w && w.ci === 0 && w.k > 1) { const a = w.k / ring0.length; return { w: [a * 0.97, a * 0.97 + 0.03] }; } }
         return null;
       });
-      S.beat(0.5, (s) => { s.s1Mark.r = 22; s.s1Mark.stroke = GOLD; s.s1Mark.sw = 6; });
-      S.beat(0.5, (s) => { s.s1Mark.r = 14; s.s1Mark.stroke = INK; s.s1Mark.sw = 3; });
+      S.beat(0.5, (s) => { s.s1Mark.r = 21; s.s1Mark.stroke = GOLD; s.s1Mark.sw = 6; });
+      S.beat(0.5, (s) => { s.s1Mark.r = 15; s.s1Mark.stroke = INK; s.s1Mark.sw = 3; });
 
       // ---- step 3: why it is always a clean cycle
       S.step({ say: 'Why does it have to come back? Because every step of this cipher can be undone. So no two states ever lead to the same next state: each state has exactly one way in and one way out. That forces clean, separate cycles. Solitaire is different. Its steps cannot all be undone, so two states can lead to the same one, and you get on-ramps feeding into cycles, which makes it much harder to measure.' });
@@ -1759,7 +1763,7 @@
         for (let i = 0; i < 10; i++) { s['pa' + i].o = 0; s['pac' + i].o = 0; }
         for (let i = 0; i < 8; i++) { s['pb' + i].o = 0; s['pbc' + i].o = 0; }
         for (let i = 0; i < 4; i++) { s['tl' + i].o = 0; s['tlc' + i].o = 0; }
-        s.counter.o = 0; s.counterLbl.o = 0; s.guide0.o = 0; s.s1Mark.o = 0; s.s1Lbl.o = 0;
+        s.counter.o = 0; s.counterLbl.o = 0; s.guide0.o = 0; s.s1Mark.o = 0; s.s1Lbl.o = 0; s.s2Lbl.o = 0;
       });
       // State 1's 381 red states spread out to their places in the grid first; then the other 195 fill the gaps in grey
       S.beat(2.4, (s) => {
@@ -1793,7 +1797,7 @@
         const base = [0, 0.25, 0.45, 0.5][w.ci], a = base + (w.k / L.cyc[w.ci].length) * 0.25;
         return { w: [a, a + 0.5] };
       });
-      S.beat(0.7, (s) => { for (let i = 0; i < 4; i++) { s['ringLbl' + i].o = 1; s['ringSub' + i].o = 1; } s.s1Mark.o = 1; s.s1Lbl.o = 1; });
+      S.beat(0.7, (s) => { for (let i = 0; i < 4; i++) { s['ringLbl' + i].o = 1; s['ringSub' + i].o = 1; } s.s1Mark.o = 1; s.s1Lbl.o = 1; s.s2Lbl.o = 1; });
       S.hold(0.3);
 
       // ---- step 6: the self-check
@@ -1950,7 +1954,7 @@
       S.beat(0.45, (s) => cap(s, 'Zoom out: this was one of twelve configurations',
         'A configuration is one deck size with one rotation setting. Each ring is one configuration: largest cycle red,\nsecond charcoal, the rest gold; inside, how many cycles. The gold box is the 4-card example from before.'));
       S.beat(0.6, (s) => {
-        ['eq1', 'eq2', 'cfgTag', 'cfgTxt', 's1Mark', 's1Lbl'].forEach((k) => { s[k].o = 0; });
+        ['eq1', 'eq2', 'cfgTag', 'cfgTxt', 's1Mark', 's1Lbl', 's2Lbl'].forEach((k) => { s[k].o = 0; });
         for (let i = 0; i < 4; i++) { s['ringLbl' + i].o = 0; s['ringSub' + i].o = 0; s['guide' + i].o = 0; }
       });
       // every dot flies to its own place on the cell's ring, so the four cycles become the ring's four arcs
@@ -2149,13 +2153,13 @@
   }
 
   // ================================================================ keys
-  function keys() {
-    const S = new Scene('keys', TITLES.keys);
+  // The key slide and the 256-keys slide are one animation, sliced in two (Scott, 2026-10-05), so the 256-keys slide
+  // opens exactly where the key slide stops: BAAD and ABBA on the mini map. Each part adds its objects and returns its
+  // steps; S.keyPart carries what the second part needs from the first.
+  function buildKeys(S) {
     const X0 = 420, P = 136, Y = { drive: 236, search: 486 };
     const sx = (i) => X0 + i * P;
     const L = loopData();
-    chrome(S);
-    cfgTag(S);
 
     const KEY1 = 'BAAD', KEY2 = 'ABBA';
     const ks1 = C.keySchedule(START_DRIVE, START_SEARCH, KEY1, '');
@@ -2253,89 +2257,94 @@
       S.beat(fly, (s) => Object.assign(s[mk], { x: p.x - 14, y: p.y - 14 }), (id) => (id === mk ? { arc } : null));
     }
 
-    // ---- step 0
-    S.step({ say: 'So where does a starting arrangement come from? From the key. A key is just a word, here B-A-A-D, and each letter becomes a number. Both decks start in order.' });
-    S.beat(0.45, (s) => cap(s, 'A key is a word; each letter becomes a number',
-      'The key here is BAAD. With 4 cards per deck the letters are A to D, worth 0 to 3, and every run starts from both decks in order.\nThe key never names a state directly. It shuffles its way to one, using the same two cuts.'));
-    S.hold(0.6);
+    // what the 256-keys slide clears away, and where the two keys sit on the mini map
+    S.keyPart = { KEY1, KEY2, ui: ['keyLbl', 'keySub', 'kLegend', 'lblDriveT', 'lblDriveS', 'lblSearchT', 'lblSearchS', 'opsT', 'stageLbl', 'mrT']
+      .concat([0, 1, 2, 3].flatMap((i) => ['kt' + i, 'kl' + i, 'kv' + i, 'op' + i, 'hl' + i, 'mrl' + i, 'mrs' + i]), START_DRIVE, START_SEARCH) };
+    return () => {
+      // ---- step 0
+      S.step({ say: 'So where does a starting arrangement come from? From the key. A key is just a word, here B-A-A-D, and each letter becomes a number. Both decks start in order.' });
+      S.beat(0.45, (s) => cap(s, 'A key is a word; each letter becomes a number',
+        'The key here is BAAD. With 4 cards per deck the letters are A to D, worth 0 to 3, and every run starts from both decks in order.\nThe key never names a state directly. It shuffles its way to one, using the same two cuts.'));
+      S.hold(0.6);
 
-    // ---- step 1: first letter, slowly
-    S.step({ say: 'Each letter drives four of the same cuts you just saw: two on the Drive Deck, two on the Search Deck, using this letter and the next one. Here is the first letter, B, worth one.' });
-    S.beat(0.45, (s) => cap(s, 'Letter 1: B (worth 1), with the next letter A (worth 0)',
-      'Each letter drives four cuts, two on each deck, using this letter and the next one.\nThese are the same Count Cut and Search Cut as the worked example, just driven by the key instead of the cards.'));
-    letter(ks1.ops[0], false);
+      // ---- step 1: first letter, slowly
+      S.step({ say: 'Each letter drives four of the same cuts you just saw: two on the Drive Deck, two on the Search Deck, using this letter and the next one. Here is the first letter, B, worth one.' });
+      S.beat(0.45, (s) => cap(s, 'Letter 1: B (worth 1), with the next letter A (worth 0)',
+        'Each letter drives four cuts, two on each deck, using this letter and the next one.\nThese are the same Count Cut and Search Cut as the worked example, just driven by the key instead of the cards.'));
+      letter(ks1.ops[0], false);
 
-    // ---- step 2: the remaining letters, quickly
-    S.step({ say: 'The other three letters do the same thing, quickly. The last letter wraps around and uses the first letter as its partner.' });
-    S.beat(0.45, (s) => cap(s, 'Letters 2 to 4: the same four cuts each',
-      'The last letter wraps around and pairs with the first. When the letters run out, the decks hold this key’s starting arrangement.'));
-    for (let i = 1; i < 4; i++) letter(ks1.ops[i], true);
-    S.beat(0.4, (s) => { resetKeyTiles(s); s.stageLbl.content = 'STARTING ARRANGEMENT'; });
-    S.hold(0.4);
+      // ---- step 2: the remaining letters, quickly
+      S.step({ say: 'The other three letters do the same thing, quickly. The last letter wraps around and uses the first letter as its partner.' });
+      S.beat(0.45, (s) => cap(s, 'Letters 2 to 4: the same four cuts each',
+        'The last letter wraps around and pairs with the first. When the letters run out, the decks hold this key’s starting arrangement.'));
+      for (let i = 1; i < 4; i++) letter(ks1.ops[i], true);
+      S.beat(0.4, (s) => { resetKeyTiles(s); s.stageLbl.content = 'STARTING ARRANGEMENT'; });
+      S.hold(0.4);
 
-    // ---- step 3: one round, then onto the loop map
-    S.step({ say: 'Then one round, exactly like the worked example, gives this key its first state. And that state sits on one of our four cycles: for BAAD, the big one. Everything about this key, including how long before its stream repeats, is decided right here, by which cycle it lands on.' });
-    S.beat(0.45, (s) => cap(s, 'One round gives the key’s first state, which sits on one cycle',
-      'BAAD lands on Cycle #1, the largest, with 381 states. Everything about this key, including how long its secret stream\nruns before repeating, is decided by which cycle its first state sits on.'));
-    S.beat(0.4, (s) => { s.stageLbl.content = 'ONE ROUND →'; s.opsT.o = 0; for (let j = 0; j < 4; j++) { s['op' + j].o = 0; } });
-    S.beat(1.1, (s) => {
-      fr1.drive.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; });
-      fr1.search.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; });
-    });
-    S.beat(0.4, (s) => { s.stageLbl.content = 'FIRST STATE OF KEY BAAD'; });
-    S.beat(0.9, (s) => { s.mrT.o = 1; MR.forEach((m, i) => { s['mr' + i].o = 1; s['mr' + i].draw = 1; s['mrl' + i].o = 1; s['mrs' + i].o = 1; }); });
-    keyDot('mk1', p1, ARC1, 1.2);
-    S.beat(0.4, (s) => { s.mk1L.o = 1; });
-    S.hold(0.3);
-
-    // ---- step 4: ABBA, the weak key
-    S.step({ say: 'Now a different key: ABBA. Same procedure, start to finish. And ABBA lands on one of the tiny cycles: its stream repeats after only 11 rounds. Nothing about the letters warns you. That is the problem weak keys pose, and it is why a deployed version would need a way to check a key before using it.' });
-    S.beat(0.45, (s) => {
-      cap(s, `A different key, ABBA, lands on Cycle #${L.where[c2].ci + 1}: only 11 states`,
-        'Same schedule, same round, different word. ABBA’s secret stream would repeat after just 11 rounds.\nNothing about the letters warns you: a weak key is weak because of where it lands, not how it looks.');
-      for (let i = 0; i < 4; i++) { s['kl' + i].content = KEY2[i]; s['kv' + i].content = '= ' + (KEY2.charCodeAt(i) - 65); }
-      resetKeyTiles(s);
-      s.stageLbl.content = 'BACK TO THE START';
-    });
-    S.beat(0.8, (s) => { START_DRIVE.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; }); START_SEARCH.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; }); });
-    S.beat(0.2, (s) => { s.stageLbl.content = 'KEY SCHEDULE: ABBA'; s.opsT.o = 0; for (let j = 0; j < 4; j++) s['op' + j].o = 0; });
-    // replay at a glance: one combined move per deck per letter
-    ks2.ops.forEach((o) => {
-      S.beat(0.15, (s) => { resetKeyTiles(s); s['kt' + o.i].fill = GOLD; });
-      S.beat(0.6, (s) => {
-        o.drive[2].forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; });
-        o.search[2].forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; });
-      }, (id) => {
-        const deck = id[0] === 'S' ? o.drive : o.search, a = deck[0].indexOf(id), b = deck[2].indexOf(id);
-        return a < 0 || a === b ? null : { arc: b > a ? 38 : -38 };
+      // ---- step 3: one round, then onto the loop map
+      S.step({ say: 'Then one round, exactly like the worked example, gives this key its first state. And that state sits on one of our four cycles: for BAAD, the big one. Everything about this key, including how long before its stream repeats, is decided right here, by which cycle it lands on.' });
+      S.beat(0.45, (s) => cap(s, 'One round gives the key’s first state, which sits on one cycle',
+        'BAAD lands on Cycle #1, the largest, with 381 states. Everything about this key, including how long its secret stream\nruns before repeating, is decided by which cycle its first state sits on.'));
+      S.beat(0.4, (s) => { s.stageLbl.content = 'ONE ROUND →'; s.opsT.o = 0; for (let j = 0; j < 4; j++) { s['op' + j].o = 0; } });
+      S.beat(1.1, (s) => {
+        fr1.drive.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; });
+        fr1.search.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; });
       });
-    });
-    S.beat(0.3, (s) => { resetKeyTiles(s); s.stageLbl.content = 'ONE ROUND →'; });
-    S.beat(1.0, (s) => {
-      fr2.drive.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; });
-      fr2.search.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; });
-    });
-    S.beat(0.3, (s) => { s.stageLbl.content = 'FIRST STATE OF KEY ABBA'; });
-    keyDot('mk2', p2, ARC2, 1.3);
-    S.beat(0.4, (s) => { s.mk2L.o = 1; s.mr2.sw = 9; });
-    S.hold(0.4);
-    return S;
+      S.beat(0.4, (s) => { s.stageLbl.content = 'FIRST STATE OF KEY BAAD'; });
+      S.beat(0.9, (s) => { s.mrT.o = 1; MR.forEach((m, i) => { s['mr' + i].o = 1; s['mr' + i].draw = 1; s['mrl' + i].o = 1; s['mrs' + i].o = 1; }); });
+      keyDot('mk1', p1, ARC1, 1.2);
+      S.beat(0.4, (s) => { s.mk1L.o = 1; });
+      S.hold(0.3);
+
+      // ---- step 4: ABBA, the weak key
+      S.step({ say: 'Now a different key: ABBA. Same procedure, start to finish. And ABBA lands on one of the tiny cycles: its stream repeats after only 11 rounds. Nothing about the letters warns you. That is the problem weak keys pose, and it is why a deployed version would need a way to check a key before using it.' });
+      S.beat(0.45, (s) => {
+        cap(s, `A different key, ABBA, lands on Cycle #${L.where[c2].ci + 1}: only 11 states`,
+          'Same schedule, same round, different word. ABBA’s secret stream would repeat after just 11 rounds.\nNothing about the letters warns you: a weak key is weak because of where it lands, not how it looks.');
+        for (let i = 0; i < 4; i++) { s['kl' + i].content = KEY2[i]; s['kv' + i].content = '= ' + (KEY2.charCodeAt(i) - 65); }
+        resetKeyTiles(s);
+        s.stageLbl.content = 'BACK TO THE START';
+      });
+      S.beat(0.8, (s) => { START_DRIVE.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; }); START_SEARCH.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; }); });
+      S.beat(0.2, (s) => { s.stageLbl.content = 'KEY SCHEDULE: ABBA'; s.opsT.o = 0; for (let j = 0; j < 4; j++) s['op' + j].o = 0; });
+      // replay at a glance: one combined move per deck per letter
+      ks2.ops.forEach((o) => {
+        S.beat(0.15, (s) => { resetKeyTiles(s); s['kt' + o.i].fill = GOLD; });
+        S.beat(0.6, (s) => {
+          o.drive[2].forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; });
+          o.search[2].forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; });
+        }, (id) => {
+          const deck = id[0] === 'S' ? o.drive : o.search, a = deck[0].indexOf(id), b = deck[2].indexOf(id);
+          return a < 0 || a === b ? null : { arc: b > a ? 38 : -38 };
+        });
+      });
+      S.beat(0.3, (s) => { resetKeyTiles(s); s.stageLbl.content = 'ONE ROUND →'; });
+      S.beat(1.0, (s) => {
+        fr2.drive.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.drive; });
+        fr2.search.forEach((id, i) => { s[id].x = sx(i); s[id].y = Y.search; });
+      });
+      S.beat(0.3, (s) => { s.stageLbl.content = 'FIRST STATE OF KEY ABBA'; });
+      keyDot('mk2', p2, ARC2, 1.3);
+      S.beat(0.4, (s) => { s.mk2L.o = 1; s.mr2.sw = 9; });
+      S.hold(0.4);
+    };
   }
 
   // ================================================================ land
-  function land() {
-    const S = new Scene('land', TITLES.land);
-    const L = loopData(), geo = ringGeo(L.cyc), total = L.nxt.length;
-    chrome(S);
-    cfgTag(S);
+  // Everything here starts hidden: the key slide's last frame is this slide's first.
+  function buildLand(S) {
+    const L = loopData(), geo = ringGeo(L.cyc), total = L.nxt.length, KP = S.keyPart;
 
-    geo.forEach((g, i) => S.add('guide' + i, 'ring', {}, { x: g.cx, y: g.cy, r: g.r, stroke: LIGHT, sw: 2 }));
+    geo.forEach((g, i) => S.add('guide' + i, 'ring', {}, { x: g.cx, y: g.cy, r: g.r, stroke: LIGHT, sw: 2, o: 0 }));
     for (let code = 0; code < total; code++) {
       const w = L.where[code], p = geo[w.ci].at(w.k);
-      S.add('d' + code, 'dot', {}, { x: p.x, y: p.y, r: w.ci < 2 ? 3.6 : 4.2, fill: LOOP_COL[w.ci], z: 2 });
+      S.add('d' + code, 'dot', {}, { x: p.x, y: p.y, r: w.ci < 2 ? 3.6 : 4.2, fill: LOOP_COL[w.ci], z: 2, o: 0 });
     }
     const counts = [0, 0, 0, 0];
     L.keys.forEach((k) => { counts[L.where[k.code].ci]++; });
+    // BAAD and ABBA, followed on the key slide, are on the map from the start: gold, with their names
+    const iB = L.keys.findIndex((k) => k.key === KP.KEY1), iA = L.keys.findIndex((k) => k.key === KP.KEY2), OURS = [iB, iA];
+    const ciB = L.where[L.keys[iB].code].ci, ciA = L.where[L.keys[iA].code].ci;
     const pct = (x, of) => ((100 * x) / of).toFixed(1) + '%';
     const lens = L.cyc.map((c) => c.length);
 
@@ -2344,22 +2353,33 @@
     const LBL = [{ x: 560, y: 360, a: 'middle' }, { x: 1180, y: 372, a: 'middle' }, { x: 1502, y: 292, a: 'start' }, { x: 1502, y: 474, a: 'start' }];
     LBL.forEach((p, i) => {
       const big = i === 0;
-      S.add('st' + i, 'text', { size: big ? 34 : 27, weight: 700, anchor: p.a }, { x: p.x, y: p.y, content: `Cycle #${i + 1}`, fill: LOOP_COL[i] });
-      S.add('sn' + i, 'text', { size: big ? 26 : 21, anchor: p.a }, { x: p.x, y: p.y + (big ? 36 : 28), content: `${lens[i]} States`, fill: GREY });
-      S.add('kc' + i, 'text', { size: big ? 30 : 24, anchor: p.a, fmt: '{n} keys' }, { x: p.x, y: p.y + (big ? 80 : 60), num: 0, fill: INK, o: 0 });
+      S.add('st' + i, 'text', { size: big ? 34 : 27, weight: 700, anchor: p.a }, { x: p.x, y: p.y, content: `Cycle #${i + 1}`, fill: LOOP_COL[i], o: 0 });
+      S.add('sn' + i, 'text', { size: big ? 26 : 21, anchor: p.a }, { x: p.x, y: p.y + (big ? 36 : 28), content: `${lens[i]} States`, fill: GREY, o: 0 });
+      // the tallies start from the two keys already on the map
+      S.add('kc' + i, 'text', { size: big ? 30 : 24, anchor: p.a, fmt: '{n} keys' }, { x: p.x, y: p.y + (big ? 80 : 60), num: [ciB, ciA].filter((c) => c === i).length, fill: INK, o: 0 });
       S.add('sp' + i, 'text', { size: big ? 24 : 20, anchor: p.a }, { x: p.x, y: p.y + (big ? 118 : 88),
         content: i === 0 ? `${pct(lens[i], total)} of states · ${pct(counts[i], 256)} of keys` : `${pct(lens[i], total)} of states\n${pct(counts[i], 256)} of keys`, fill: GREY, o: 0 });
     });
 
     // key bank: 16 x 16 grid of keys, then each flies to its first state
     const BX = 1610, BY = 150, BS = 17;
-    S.add('bankT', 'text', { size: 25, weight: 700 }, { x: BX, y: 110, content: 'All 256 keys', o: 0 });
-    const stack = {};
+    S.add('bankT', 'text', { size: 25, weight: 700 }, { x: BX, y: 110, content: 'The other 254 keys', o: 0 });
+    const stack = {}, depth = {}, OUR = { r: 7, fill: GOLD, stroke: INK, sw: 2 };
+    L.keys.forEach((k) => { depth[k.code] = (depth[k.code] || 0) + 1; });
     L.keys.forEach((k, i) => {
       const w = L.where[k.code], n = (stack[k.code] = (stack[k.code] || 0) + 1) - 1;
       k.ci = w.ci; k.dest = geo[w.ci].at(w.k, 12 + n * 10);
-      S.add('k' + i, 'dot', {}, { x: BX + (i % 16) * BS, y: BY + Math.floor(i / 16) * BS, r: 5.5, fill: INK, stroke: '#FFFFFF', sw: 1.5, o: 0, z: 10 + n });
+      S.add('k' + i, 'dot', {}, OURS.includes(i) ? Object.assign({ x: k.dest.x, y: k.dest.y, o: 0, z: 30 }, OUR)
+        : { x: BX + (i % 16) * BS, y: BY + Math.floor(i / 16) * BS, r: 5.5, fill: INK, stroke: '#FFFFFF', sw: 1.5, o: 0, z: 10 + n });
     });
+    // where the key slide's names go: beyond the stack on the big cycle, above the ring on a small one
+    const nameAt = (i) => {
+      const k = L.keys[i], w = L.where[k.code], g = geo[w.ci];
+      if (w.ci >= 2) return { x: g.cx - 34, y: g.cy - g.r - 64 };
+      const p = g.at(w.k, 12 + depth[k.code] * 10 + 20);
+      return { x: p.x, y: p.y + 9 };
+    };
+    const ourAt = (i) => ({ x: L.keys[i].dest.x - 7, y: L.keys[i].dest.y - 7, w: 14, h: 14, rx: 7, sw: 2 });
 
     // right panel text for the later steps
     S.add('rp1', 'text', { size: 27, weight: 700 }, { x: 1100, y: 640, content: 'At 8 cards per deck', o: 0 });
@@ -2388,91 +2408,105 @@
     const keyFly = (id) => { if (!/^k\d+$/.test(id)) return null; const ci = L.keys[+id.slice(1)].ci; return { w: [ci * 0.07, ci * 0.07 + 0.78] }; };
     const LABELS = ['st', 'sn', 'kc', 'sp', 'guide'];
 
-    // ---- step 0
-    S.step({ say: 'Now do that for every key. At four cards per deck there are 256 possible keys. Each one lands somewhere on these four cycles.' });
-    S.beat(0.45, (s) => cap(s, 'Every key, run through the key schedule',
-      'At 4 cards per deck there are 4 × 4 × 4 × 4 = 256 possible keys. Each key’s first state sits on one of the four cycles.\nThe question: does the key schedule spread keys fairly, or does it favor some cycles?'));
-    S.beat(0.8, (s) => { s.bankT.o = 1; L.keys.forEach((k, i) => { s['k' + i].o = 1; }); },
-      (id) => (id[0] === 'k' && /^k\d+$/.test(id) ? { w: [(+id.slice(1) / 256) * 0.6, (+id.slice(1) / 256) * 0.6 + 0.4] } : null));
-    S.hold(0.3);
+    return () => {
+      // ---- step 0: the key slide's mini map grows into the full picture, BAAD and ABBA riding along to where they landed;
+      // then the other 254 keys wait in the bank
+      S.step({ say: 'Now every key. At four cards per deck there are 256 possible keys: BAAD and ABBA, which we just followed, and 254 more. Each one lands somewhere on these same four cycles.' });
+      S.beat(0.45, (s) => cap(s, 'Every key, run through the key schedule',
+        'At 4 cards per deck there are 4 × 4 × 4 × 4 = 256 possible keys: BAAD, ABBA and 254 more.\nThe question: does the key schedule spread keys fairly, or does it favor some cycles?'));
+      S.beat(0.6, (s) => { KP.ui.forEach((id) => { s[id].o = 0; }); });
+      S.beat(1.5, (s) => {
+        geo.forEach((g, i) => Object.assign(s['mr' + i], { x: g.cx, y: g.cy, r: g.r, sw: i < 2 ? 4 : 3 }));
+        Object.assign(s.mk1, ourAt(iB)); Object.assign(s.mk2, ourAt(iA));
+        Object.assign(s.mk1L, nameAt(iB)); Object.assign(s.mk2L, nameAt(iA));
+      });
+      S.beat(0.02, (s) => { s.mk1.o = 0; s.mk2.o = 0; OURS.forEach((i) => { s['k' + i].o = 1; }); });     // the same dots, handed over
+      S.beat(0.9, (s) => {
+        geo.forEach((g, i) => { s['mr' + i].o = 0; s['guide' + i].o = 1; s['st' + i].o = 1; s['sn' + i].o = 1; });
+        for (let code = 0; code < total; code++) s['d' + code].o = 1;
+      });
+      S.beat(0.8, (s) => { s.bankT.o = 1; L.keys.forEach((k, i) => { s['k' + i].o = 1; }); },
+        (id) => (/^k\d+$/.test(id) && !OURS.includes(+id.slice(1)) ? { w: [(+id.slice(1) / 256) * 0.6, (+id.slice(1) / 256) * 0.6 + 0.4] } : null));
+      S.hold(0.3);
+      // ---- step 1: fly
+      S.step({ say: 'Here they go. Each dot is one key landing on its first state, joining BAAD and ABBA.' });
+      S.beat(0.45, (s) => cap(s, 'Mark where each key lands',
+        'Each dot is one key, placed at the state its key schedule produces. Keys that share a state stack outward.'));
+      S.beat(4.6, (s) => {
+        L.keys.forEach((k, i) => { if (!OURS.includes(i)) Object.assign(s['k' + i], { x: k.dest.x, y: k.dest.y, r: 4.6 }); });
+        for (let i = 0; i < 4; i++) { s['kc' + i].o = 1; s['kc' + i].num = counts[i]; }
+        s.bankT.o = 0;
+      }, (id) => {
+        if (/^k\d+$/.test(id) && !OURS.includes(+id.slice(1))) { const a = (+id.slice(1) / 256) * 0.8; return { w: [a, a + 0.2], arc: 40 }; }
+        if (/^kc\d$/.test(id)) return { w: [0.05, 1] };
+        return null;
+      });
+      S.hold(0.4);
 
-    // ---- step 1: fly
-    S.step({ say: 'Here they go. Each dot is one key landing on its first state.' });
-    S.beat(0.45, (s) => cap(s, 'Mark where each key lands',
-      'Each dot is one key, placed at the state its key schedule produces. Keys that share a state stack outward.'));
-    S.beat(4.6, (s) => {
-      L.keys.forEach((k, i) => { s['k' + i].x = k.dest.x; s['k' + i].y = k.dest.y; s['k' + i].r = 4.6; });
-      for (let i = 0; i < 4; i++) { s['kc' + i].o = 1; s['kc' + i].num = counts[i]; }
-      s.bankT.o = 0;
-    }, (id) => {
-      if (/^k\d+$/.test(id)) { const a = (+id.slice(1) / 256) * 0.8; return { w: [a, a + 0.2], arc: 40 }; }
-      if (/^kc\d$/.test(id)) return { w: [0.05, 1] };
-      return null;
-    });
-    S.hold(0.4);
+      // ---- step 2: proportional
+      S.step({ say: 'And the pattern is simple. Big cycles catch most of the keys, small cycles catch very few, in proportion to their size. Cycle number one, with 381 states, is 66 percent of the states and catches 64 percent of the keys. No cycle is favored. At eight cards per deck this holds almost perfectly: the largest cycle is 78.40 percent of the states and catches 78.40 percent of the keys. That is the strongest positive result in the paper.' });
+      S.beat(0.45, (s) => cap(s, 'Keys land in proportion to cycle size',
+        'Cycle #1 holds two-thirds of the states and catches about two-thirds of the keys. No cycle is favored.\nAt 8 cards per deck the match is within a few hundredths of a percentage point, across cycles of every size.'));
+      S.beat(0.8, (s) => { for (let i = 0; i < 4; i++) s['sp' + i].o = 1; });
+      S.beat(0.7, (s) => { s.rp1.o = 1; s.rp2.o = 1; });
+      S.hold(0.3);
 
-    // ---- step 2: proportional
-    S.step({ say: 'And the pattern is simple. Big cycles catch most of the keys, small cycles catch very few, in proportion to their size. Cycle number one, with 381 states, is 66 percent of the states and catches 64 percent of the keys. No cycle is favored. At eight cards per deck this holds almost perfectly: the largest cycle is 78.40 percent of the states and catches 78.40 percent of the keys. That is the strongest positive result in the paper.' });
-    S.beat(0.45, (s) => cap(s, 'Keys land in proportion to cycle size',
-      'Cycle #1 holds two-thirds of the states and catches about two-thirds of the keys. No cycle is favored.\nAt 8 cards per deck the match is within a few hundredths of a percentage point, across cycles of every size.'));
-    S.beat(0.8, (s) => { for (let i = 0; i < 4; i++) s['sp' + i].o = 1; });
-    S.beat(0.7, (s) => { s.rp1.o = 1; s.rp2.o = 1; });
-    S.hold(0.3);
+      // ---- step 3: zoom out, every key of every configuration
+      S.step({ say: 'And that was just one configuration. The same check ran for every key in all twelve: 256 keys at four cards, about forty-seven thousand at six, and sixteen point eight million at eight, at each rotation setting, about sixty-seven million keys in all. Each ring shows where one configuration’s keys landed, split by cycle like before: the largest cycle in red, the second in charcoal, the rest in gold. Every one of those keys was placed exactly, not sampled.' });
+      S.beat(0.45, (s) => cap(s, 'Zoom out: every key, in all 12 configurations',
+        'The same check ran for every key: 256 at 4 cards, 46,656 at 6 and 16,777,216 at 8, at each rotation setting.\nEach ring shows where one configuration’s keys landed, by cycle: largest red, second charcoal, the rest gold.'));
+      S.beat(0.6, (s) => {
+        for (let i = 0; i < 4; i++) LABELS.forEach((p) => { s[p + i].o = 0; });
+        for (let c = 0; c < total; c++) s['d' + c].o = 0;
+        ['rp1', 'rp2', 'cfgTag', 'cfgTxt', 'mk1L', 'mk2L'].forEach((k) => { s[k].o = 0; });
+      });
+      // every key flies to its place on the example cell's ring, so its cycles become the ring's arcs
+      S.beat(1.8, (s) => { L.keys.forEach((k, i) => Object.assign(s['k' + i], onCell[i], { r: 3 })); }, keyFly);
+      S.beat(0.6, (s) => {
+        L.keys.forEach((k, i) => { s['k' + i].o = 0; });
+        kg.cellIds(ZHI, ZHJ).forEach((id) => { s[id].o = 1; });
+        s.zHere.o = 1; s['zCol' + ZHJ].o = 1; s.zRow0.o = 1; s.zSts0.o = 1;
+      });
+      S.beat(0.5, (s) => { ZROTS.forEach((t, j) => { s['zCol' + j].o = 1; }); });
+      S.beat(1.3, (s) => { kg.showCell(s, 0, 0); kg.showCell(s, 0, 1); kg.showCell(s, 0, 3); s.z03m.o = 1; }, kg.rowTiming(0));
+      S.beat(1.4, (s) => { s.zRow1.o = 1; s.zSts1.o = 1; for (let j = 0; j < 4; j++) kg.showCell(s, 1, j); }, kg.rowTiming(1));
+      S.beat(1.4, (s) => { s.zRow2.o = 1; s.zSts2.o = 1; s.zNote.o = 1; for (let j = 0; j < 4; j++) kg.showCell(s, 2, j); }, kg.rowTiming(2));
+      S.beat(0.6, (s) => { s.zHere.o = 0; s.zAll.o = 1; });
+      S.beat(0.5, (s) => { s.zTot.o = 1; s.zTotS.o = 1; });
+      S.hold(0.4);
 
-    // ---- step 3: zoom out, every key of every configuration
-    S.step({ say: 'And that was just one configuration. The same check ran for every key in all twelve: 256 keys at four cards, about forty-seven thousand at six, and sixteen point eight million at eight, at each rotation setting, about sixty-seven million keys in all. Each ring shows where one configuration’s keys landed, split by cycle like before: the largest cycle in red, the second in charcoal, the rest in gold. Every one of those keys was placed exactly, not sampled.' });
-    S.beat(0.45, (s) => cap(s, 'Zoom out: every key, in all 12 configurations',
-      'The same check ran for every key: 256 at 4 cards, 46,656 at 6 and 16,777,216 at 8, at each rotation setting.\nEach ring shows where one configuration’s keys landed, by cycle: largest red, second charcoal, the rest gold.'));
-    S.beat(0.6, (s) => {
-      for (let i = 0; i < 4; i++) LABELS.forEach((p) => { s[p + i].o = 0; });
-      for (let c = 0; c < total; c++) s['d' + c].o = 0;
-      ['rp1', 'rp2', 'cfgTag', 'cfgTxt'].forEach((k) => { s[k].o = 0; });
-    });
-    // every key flies to its place on the example cell's ring, so its cycles become the ring's arcs
-    S.beat(1.8, (s) => { L.keys.forEach((k, i) => Object.assign(s['k' + i], onCell[i], { r: 3 })); }, keyFly);
-    S.beat(0.6, (s) => {
-      L.keys.forEach((k, i) => { s['k' + i].o = 0; });
-      kg.cellIds(ZHI, ZHJ).forEach((id) => { s[id].o = 1; });
-      s.zHere.o = 1; s['zCol' + ZHJ].o = 1; s.zRow0.o = 1; s.zSts0.o = 1;
-    });
-    S.beat(0.5, (s) => { ZROTS.forEach((t, j) => { s['zCol' + j].o = 1; }); });
-    S.beat(1.3, (s) => { kg.showCell(s, 0, 0); kg.showCell(s, 0, 1); kg.showCell(s, 0, 3); s.z03m.o = 1; }, kg.rowTiming(0));
-    S.beat(1.4, (s) => { s.zRow1.o = 1; s.zSts1.o = 1; for (let j = 0; j < 4; j++) kg.showCell(s, 1, j); }, kg.rowTiming(1));
-    S.beat(1.4, (s) => { s.zRow2.o = 1; s.zSts2.o = 1; s.zNote.o = 1; for (let j = 0; j < 4; j++) kg.showCell(s, 2, j); }, kg.rowTiming(2));
-    S.beat(0.6, (s) => { s.zHere.o = 0; s.zAll.o = 1; });
-    S.beat(0.5, (s) => { s.zTot.o = 1; s.zTotS.o = 1; });
-    S.hold(0.4);
-
-    // ---- step 4: back into the example, onto the rare weak keys
-    S.step({ say: 'Now back into the example, and onto the keys that matter most. In proportion is not the same as never. These nine keys landed on cycles three and four, the tiny ones: their streams would repeat every eleven rounds. Those are weak keys. At eight cards per deck they are rare, but the worst case is severe, which is the next slide.' });
-    S.beat(0.45, (s) => cap(s, 'Weak keys: rare, but not never',
-      `${counts[2] + counts[3]} of the 256 keys land on Cycle #3 or #4, 11 states each, so their streams repeat every 11 rounds.\nA weak key is weak because of where it lands, not because of anything in its letters.`));
-    // the grid folds back into the example's cell...
-    S.beat(0.7, (s) => {
-      for (let i = 0; i < 3; i++) for (let j = 0; j < 4; j++) if (i !== ZHI || j !== ZHJ) kg.cellIds(i, j).forEach((id) => { s[id].o = 0; });
-      ['zAll', 'zTot', 'zTotS', 'zNote', 'z03m'].forEach((k) => { s[k].o = 0; });
-      for (let i = 0; i < 3; i++) { s['zRow' + i].o = 0; s['zSts' + i].o = 0; }
-      ZROTS.forEach((t, j) => { s['zCol' + j].o = 0; });
-      s.zHere.o = 1;
-    });
-    // ...whose keys fly back out to where they landed
-    S.beat(0.4, (s) => { kg.cellIds(ZHI, ZHJ).forEach((id) => { s[id].o = 0; }); L.keys.forEach((k, i) => { s['k' + i].o = 1; }); s.zHere.o = 0; });
-    S.beat(1.6, (s) => {
-      L.keys.forEach((k, i) => Object.assign(s['k' + i], { x: k.dest.x, y: k.dest.y, r: 4.6 }));
-      for (let i = 0; i < 4; i++) LABELS.forEach((p) => { s[p + i].o = 1; });
-      for (let c = 0; c < total; c++) s['d' + c].o = 1;
-      s.cfgTag.o = 1; s.cfgTxt.o = 1;
-    }, keyFly);
-    S.beat(0.9, (s) => {
-      L.keys.forEach((k, i) => { if (k.ci < 2) s['k' + i].o = 0.18; else { s['k' + i].r = 7; s['k' + i].fill = GOLD_D; } });
-      for (let c = 0; c < total; c++) if (L.where[c].ci < 2) s['d' + c].o = 0.25;
-      ['st0', 'st1', 'sn0', 'sn1', 'kc0', 'kc1', 'sp0', 'sp1', 'guide0', 'guide1'].forEach((k) => { s[k].o = 0.25; });
-      s.weakRing2.o = 1; s.weakRing3.o = 1; s.rp1.o = 0; s.rp2.o = 0;
-    });
-    S.beat(0.6, (s) => { s.weakLbl.o = 1; s.weakSub.o = 1; });
-    S.beat(0.6, (s) => { s.rw1.o = 1; s.rw2.o = 1; });
-    S.hold(0.3);
-    return S;
+      // ---- step 4: back into the example, onto the rare weak keys
+      S.step({ say: 'Now back into the example, and onto the keys that matter most. In proportion is not the same as never. These nine keys landed on cycles three and four, the tiny ones: their streams would repeat every eleven rounds. Those are weak keys. At eight cards per deck they are rare, but the worst case is severe, which is the next slide.' });
+      S.beat(0.45, (s) => cap(s, 'Weak keys: rare, but not never',
+        `${counts[2] + counts[3]} of the 256 keys land on Cycle #3 or #4, 11 states each, so their streams repeat every 11 rounds.\nA weak key is weak because of where it lands, not because of anything in its letters.`));
+      // the grid folds back into the example's cell...
+      S.beat(0.7, (s) => {
+        for (let i = 0; i < 3; i++) for (let j = 0; j < 4; j++) if (i !== ZHI || j !== ZHJ) kg.cellIds(i, j).forEach((id) => { s[id].o = 0; });
+        ['zAll', 'zTot', 'zTotS', 'zNote', 'z03m'].forEach((k) => { s[k].o = 0; });
+        for (let i = 0; i < 3; i++) { s['zRow' + i].o = 0; s['zSts' + i].o = 0; }
+        ZROTS.forEach((t, j) => { s['zCol' + j].o = 0; });
+        s.zHere.o = 1;
+      });
+      // ...whose keys fly back out to where they landed
+      S.beat(0.4, (s) => { kg.cellIds(ZHI, ZHJ).forEach((id) => { s[id].o = 0; }); L.keys.forEach((k, i) => { s['k' + i].o = 1; }); s.zHere.o = 0; });
+      S.beat(1.6, (s) => {
+        L.keys.forEach((k, i) => Object.assign(s['k' + i], { x: k.dest.x, y: k.dest.y, r: OURS.includes(i) ? OUR.r : 4.6 }));
+        for (let i = 0; i < 4; i++) LABELS.forEach((p) => { s[p + i].o = 1; });
+        s.mk1L.o = 1; s.mk2L.o = 1;
+        for (let c = 0; c < total; c++) s['d' + c].o = 1;
+        s.cfgTag.o = 1; s.cfgTxt.o = 1;
+      }, keyFly);
+      S.beat(0.9, (s) => {
+        L.keys.forEach((k, i) => { if (k.ci < 2) s['k' + i].o = 0.18; else { s['k' + i].r = 7; s['k' + i].fill = GOLD_D; } });
+        for (let c = 0; c < total; c++) if (L.where[c].ci < 2) s['d' + c].o = 0.25;
+        ['st0', 'st1', 'sn0', 'sn1', 'kc0', 'kc1', 'sp0', 'sp1', 'guide0', 'guide1'].forEach((k) => { s[k].o = 0.25; });
+        s.weakRing2.o = 1; s.weakRing3.o = 1; s.rp1.o = 0; s.rp2.o = 0;
+        [[iB, 'mk1L'], [iA, 'mk2L']].forEach(([i, lbl]) => { if (L.keys[i].ci < 2) s[lbl].o = 0.25; });     // ABBA is one of the weak keys
+      });
+      S.beat(0.6, (s) => { s.weakLbl.o = 1; s.weakSub.o = 1; });
+      S.beat(0.6, (s) => { s.rw1.o = 1; s.rw2.o = 1; });
+      S.hold(0.3);
+    };
   }
 
   // One animation shown as several slides, built once and sliced at the cut points it records while it is built
@@ -2488,7 +2522,16 @@
       return sliceScene(full, name, TITLES[name], at[k], at[k + 1]);
     };
   }
-  const workedPart = partsOf(worked), cyclesPart = partsOf(cycles);
+  function keyland() {
+    const S = new Scene('keyland', TITLES.keys);
+    S.cuts = [];
+    chrome(S);
+    cfgTag(S);
+    const parts = [buildKeys(S), buildLand(S)];
+    parts.forEach((steps, k) => { if (k) S.cuts.push(S.steps.length); steps(); });
+    return S;
+  }
+  const workedPart = partsOf(worked), cyclesPart = partsOf(cycles), keysPart = partsOf(keyland);
 
   root.Scenes = {
     list: [                     // in deck order
@@ -2501,8 +2544,8 @@
       { name: 'growth', title: TITLES.growth, build: () => cyclesPart('growth', 2) },
       { name: 'shares', title: TITLES.shares, build: () => cyclesPart('shares', 3) },
       { name: 'rotation', title: TITLES.rotation, build: () => cyclesPart('rotation', 4) },
-      { name: 'keys', title: TITLES.keys, build: keys },
-      { name: 'land', title: TITLES.land, build: land },
+      { name: 'keys', title: TITLES.keys, build: () => keysPart('keys', 0) },
+      { name: 'land', title: TITLES.land, build: () => keysPart('land', 1) },
     ],
   };
 })(this);
@@ -3054,6 +3097,32 @@ animation('growth', 60);
 animation('shares', 60);
 animation('rotation', 90);
 {
+  // Moved here from Key Analysis at Scott's request (2026-10-05): it draws the rotation slide's conclusion. The weak-key
+  // row is left out: weak keys come in Part 4 (the weak-keys slide has them by rotation).
+  const s = slide('CONTENT', 'Rotation Analysis at 8 Deck Size', 45, `
+Putting it together at eight cards. Rotations 0 and 3 are out: each lets a real key onto a four-round cycle, and nothing else makes up for that. Rotation 5 has the longest typical period, about a billion rounds, the biggest dominant cycle, and the highest floor. Rotation 1 is the reasonable alternative.
+
+Three honest limits on that recommendation. It's the best of four tested, out of eight possible at this size. At six cards the two criteria actually disagree. And it says nothing about randomness, or about the full 26-card deck.`);
+  const cols = [['0', 'Ruled out', '649 million', '44.8%', '4'], ['1', 'Alternative', '518 million', '48.0%', '225'],
+    ['3', 'Ruled out', '769 million', '65.7%', '4'], ['5', 'Recommended', '1,038 million', '78.4%', '289']];
+  const labels = ['Typical period (rounds)', 'Largest cycle holds', 'Shortest reachable cycle'];
+  const w = 2.83, g = 0.27;
+  cols.forEach(([r, verdict, per, big, floor], i) => {
+    const x = 0.5 + i * (w + g), y = 1.4, h = 4.3, rec = verdict === 'Recommended', out = verdict === 'Ruled out';
+    card(s, { x, y, w, h, rank: r, suit: i % 2 ? 'H' : 'S', fill: rec ? C.background2 : undefined, line: rec ? C.accent1 : undefined });
+    s.addText(`Rotation ${r}`, { x: x + 0.62, y: y + 0.12, w: w - 0.75, h: 0.45, margin: 0, fontFace: 'Calibri', fontSize: 20, bold: true, color: C.text1, isTextBox: true });
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, rectRadius: 0.08, fill: { color: rec ? C.accent1 : (out ? C.text1 : C.accent6) }, line: { color: rec ? C.accent1 : (out ? C.text1 : C.accent6), width: 0 }, objectName: 'verdict badge' });
+    s.addText(verdict, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, margin: 0, align: 'center', valign: 'middle', fontFace: 'Calibri', fontSize: 15, bold: true, color: C.background1, isTextBox: true });
+    [per, big, floor].forEach((v, k) => {
+      const bad = k === 2 && out;
+      s.addText([{ text: labels[k], options: { fontSize: 13, color: C.accent6, breakLine: true } }, { text: v, options: { fontSize: 19, bold: true, color: bad ? C.accent1 : C.text1 } }],
+        { x: x + 0.22, y: y + 1.3 + k * 0.95, w: w - 0.4, h: 0.75, margin: 0, valign: 'top', fontFace: 'Calibri', isTextBox: true });
+    });
+  });
+  s.addText('Best of the 4 rotations tested, out of 8 possible at 8 cards. At 6 cards the two criteria disagree. Says nothing about randomness or about 26 cards.',
+    { x: 0.5, y: 5.95, w: 12.33, h: 0.6, margin: 0, fontFace: 'Calibri', fontSize: 17, italic: true, color: C.accent6, valign: 'middle', isTextBox: true });
+}
+{
   // The chapter brought back together, like part 2's summary (2026-10-04). Since 2026-10-05 it has one bullet per
   // animation slide, each with a small picture of that animation (Scott), then the bridge.
   const s = slide('CONTENT', 'Cycle Structure: Summary', 45, `
@@ -3067,7 +3136,7 @@ Three: the number of states explodes with the deck size: 576 at four cards, abou
 
 Four: a few giant cycles hold almost every state, then a tail of small cycles, where a key would repeat early.
 
-Five: the rotation setting reshapes the cycles: at eight cards the largest one grows from 45 to 78 percent of all states.
+Five: the rotation setting reshapes the cycles: at eight cards the largest one grows from 45 to 78 percent of all states, and of the four tested, rotation five did best.
 
 What decides which cycle a stream runs on is where its key starts. That's the key analysis, right after a quick recap.`);
   // The pictures are SVG, shown like any other image: miniatures of the animations, in their colours (PICS).
@@ -3076,7 +3145,7 @@ What decides which cycle a stream runs on is where its key starts. That's the ke
     { head: 'All 12 configurations, every state counted', body: '4, 6 and 8 cards per deck, each at four rotation settings: about 6.5 billion states.', p: PICS.grid },
     { head: 'The number of states explodes with deck size', body: '576 at 4 cards, 518,400 at 6, 1.6 billion at 8; 10 cards is future work.', p: PICS.growth },
     { head: 'A few giant cycles hold almost every state', body: 'Then a tail of small cycles: a key that lands there repeats early.', p: PICS.giants },
-    { head: 'The rotation setting reshapes the cycles', body: 'At 8 cards the largest cycle grows from 45% to 78% of all states.', p: PICS.rotation },
+    { head: 'The rotation setting reshapes the cycles', body: 'At 8 cards the largest cycle grows from 45% to 78% of all states; rotation 5 tested best of the four.', p: PICS.rotation },
   ];
   rows.forEach((r, i) => { r.y = 1.28 + i * 0.92; });
   rows.slice(0, -1).forEach((r, i) => s.addShape(pres.shapes.RECTANGLE, { x: 0.79, y: r.y + 0.72, w: 0.04, h: rows[i + 1].y - r.y - 0.62,
@@ -3202,30 +3271,6 @@ So any real deployment needs a key check: reject a key whose starting state is o
     { x: 0.85, y: 5.6, w: 11.7, h: 1.15, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 20, isTextBox: true });
 }
 {
-  const s = slide('CONTENT', 'Rotation Analysis at 8 Deck Size', 45, `
-Putting it together at eight cards. Rotations 0 and 3 are out: each lets a real key onto a four-round cycle, and nothing else makes up for that. Rotation 5 has the longest typical period, about a billion rounds, the biggest dominant cycle, the fewest weak keys, and the highest floor. Rotation 1 is the reasonable alternative.
-
-Three honest limits on that recommendation. It's the best of four tested, out of eight possible at this size. At six cards the two criteria actually disagree. And it says nothing about randomness, or about the full 26-card deck.`);
-  const cols = [['0', 'Ruled out', '649 million', '44.8%', '1 in 65,028', '4'], ['1', 'Alternative', '518 million', '48.0%', '1 in 48,913', '225'],
-    ['3', 'Ruled out', '769 million', '65.7%', '1 in 40,041', '4'], ['5', 'Recommended', '1,038 million', '78.4%', '1 in 71,392', '289']];
-  const labels = ['Typical period (rounds)', 'Largest cycle holds', 'Weak keys', 'Shortest reachable cycle'];
-  const w = 2.83, g = 0.27;
-  cols.forEach(([r, verdict, per, big, weak, floor], i) => {
-    const x = 0.5 + i * (w + g), y = 1.4, h = 4.55, rec = verdict === 'Recommended', out = verdict === 'Ruled out';
-    card(s, { x, y, w, h, rank: r, suit: i % 2 ? 'H' : 'S', fill: rec ? C.background2 : undefined, line: rec ? C.accent1 : undefined });
-    s.addText(`Rotation ${r}`, { x: x + 0.62, y: y + 0.12, w: w - 0.75, h: 0.45, margin: 0, fontFace: 'Calibri', fontSize: 20, bold: true, color: C.text1, isTextBox: true });
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, rectRadius: 0.08, fill: { color: rec ? C.accent1 : (out ? C.text1 : C.accent6) }, line: { color: rec ? C.accent1 : (out ? C.text1 : C.accent6), width: 0 }, objectName: 'verdict badge' });
-    s.addText(verdict, { x: x + 0.62, y: y + 0.62, w: w - 0.85, h: 0.42, margin: 0, align: 'center', valign: 'middle', fontFace: 'Calibri', fontSize: 15, bold: true, color: C.background1, isTextBox: true });
-    [per, big, weak, floor].forEach((v, k) => {
-      const bad = k === 3 && out;
-      s.addText([{ text: labels[k], options: { fontSize: 13, color: C.accent6, breakLine: true } }, { text: v, options: { fontSize: 19, bold: true, color: bad ? C.accent1 : C.text1 } }],
-        { x: x + 0.22, y: y + 1.25 + k * 0.8, w: w - 0.4, h: 0.75, margin: 0, valign: 'top', fontFace: 'Calibri', isTextBox: true });
-    });
-  });
-  s.addText('Best of the 4 rotations tested, out of 8 possible at 8 cards. At 6 cards the two criteria disagree. Says nothing about randomness or about 26 cards.',
-    { x: 0.5, y: 6.15, w: 12.33, h: 0.6, margin: 0, fontFace: 'Calibri', fontSize: 17, italic: true, color: C.accent6, valign: 'middle', isTextBox: true });
-}
-{
   // The part brought back together, like the other parts' summaries (Scott, 2026-10-05): four findings, then the bridge.
   const s = slide('CONTENT', 'Key Analysis: Summary', 40, `
 Let me bring the key analysis together.
@@ -3236,12 +3281,13 @@ Two: keys land fairly. Each cycle catches keys in proportion to its size. At eig
 
 Three: weak keys are rare, but real: about one key in 40 to 70 thousand at eight cards. At rotations 0 and 3, one or two keys repeat after just four rounds, sixteen cards.
 
-Four: of the four rotations tested at eight cards, rotation five did best. And any real use needs a key check before encrypting anything.
+Four: rotation five, the best of the four on cycle structure, also has the fewest weak keys. And any real use needs a key check before encrypting anything.
 
 That's the research. Last part: what it all means.`);
   // One small picture per finding, like the Part 3 summary's (Scott, 2026-10-05): a key becoming a starting state on
   // a cycle, the keys landing on the cycles in proportion, the weak keys on the tiny cycles, and the four rotations
-  // with rotation 5 picked out, as on the Rotation Analysis slide.
+  // with rotation 5 picked out, as on the Rotation Analysis slide (in Part 3 since 2026-10-05, so the fourth finding is
+  // the weak-key side of its verdict).
   const rows = [
     { n: '1', head: 'A key picks the cycle', y: 1.3, p: PICS.keyToCycle,
       body: 'A key is a word that shuffles both decks to a starting state. The cycle that state sits on sets how long the stream runs.' },
@@ -3249,8 +3295,8 @@ That's the research. Last part: what it all means.`);
       body: 'Each cycle catches keys in proportion to its size: at 8 cards, the largest cycle holds 78.40% of the states and catches 78.40% of the keys.' },
     { n: '3', head: 'Weak keys are rare, but real', y: 3.6, p: PICS.weak,
       body: 'About 1 key in 40,000 to 71,000 at 8 cards. At rotations 0 and 3, one or two keys repeat after just 4 rounds: 16 cards.' },
-    { n: '4', head: 'Rotation 5 tested best', y: 4.75, p: PICS.rotations,
-      body: 'The longest typical stream, the biggest main cycle and the fewest weak keys of the four tested. Any real use needs a key check.' },
+    { n: '4', head: 'Rotation 5 still tests best', y: 4.75, p: PICS.rotations,
+      body: 'Best of the four on cycle structure, it also has the fewest weak keys: 1 in 71,392 at 8 cards. Any real use needs a key check.' },
   ];
   rows.slice(0, -1).forEach((r, i) => s.addShape(pres.shapes.RECTANGLE, { x: 0.83, y: r.y + 0.8, w: 0.04, h: rows[i + 1].y - r.y - 0.7,
     fill: { color: 'D9D9D9' }, line: { color: 'D9D9D9', width: 0 }, objectName: 'finding connector' }));
