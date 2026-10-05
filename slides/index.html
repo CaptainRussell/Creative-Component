@@ -1327,15 +1327,15 @@
     S.step({ say: 'Here is the cipher at its smallest: two decks of just four cards each, the spades and the hearts. Each deck is simply a stack, with a top card and a bottom card.' });
     S.beat(0.45, (s) => cap(s, 'Setup: two decks of four cards, stacked',
       'Spades and hearts, four cards each, face up. Each deck is a stack, and the card you can see is its top card.\nThe spades will be the Drive Deck and the hearts the Search Deck; the Discard Pile starts empty.'));
-    // Each deck builds one card at a time, bottom card first, slowly enough to see all four land:
-    // the Drive Deck first, then the Search Deck.
+    // Each deck builds one card at a time, bottom card first, still slow enough to see all four land (a little quicker
+    // since 2026-10-05, Scott): the Drive Deck first, then the Search Deck.
     [START_DRIVE, START_SEARCH].forEach((deck, d) => {
       for (let k = N - 1; k >= 0; k--) {
         const id = deck[k], p = stackAt(k, d ? 'search' : 'drive');
-        S.beat(0.5, (s) => { s[id].x = p.x; s[id].y = p.y; s[id].o = 1; });
-        S.hold(0.12);
+        S.beat(0.34, (s) => { s[id].x = p.x; s[id].y = p.y; s[id].o = 1; });
+        S.hold(0.07);
       }
-      if (!d) S.hold(0.25);
+      if (!d) S.hold(0.2);
     });
     S.hold(0.3);
 
@@ -2822,11 +2822,10 @@ const animation = (name, budget) => api.animation(name, budget, { slide, C, pres
 
 // =================================================================== OPENING
 newSection('Opening');
-{
-  const s = slide('TITLE', 'Analysis of a Card-Shuffle Stream Cipher', 40, `
-Good morning. My name is Captain Scott Russell, and this is my creative component for the master's in cybersecurity: an analysis of a card-shuffle stream cipher designed by my major professor, Dr. Daniels.
-
-The whole talk rests on one idea, and I'll say it now so you can hold me to it: if you shrink a cipher until you can count every possibility, questions that everyone else has had to estimate become questions you can simply answer.`);
+// The title page, which is also the last page (Scott, 2026-10-05: the talk ends where it began): the paper's name, the
+// presenter, the fan of cards and the site's QR code.
+const PAPER = 'Analysis of a Card-Shuffle Stream Cipher';
+function titlePage(s) {
   s.addText('Cycle structure, rotation variants and weak keys', { placeholder: 'subtitle' });
   s.addText([
     { text: 'Capt Scott D. Russell, USAF', options: { bold: true, fontSize: 20, breakLine: true } },
@@ -2839,6 +2838,13 @@ The whole talk rests on one idea, and I'll say it now so you can hold me to it: 
   bigCard(s, { cx: 11.75, cy: 3.35, w: 2.2, h: 3.1, rot: 12, rank: '2', suit: 'S' });
   qrCard(s, 11.43, 5.2, 1.16);
   siteText(s, 8.2, 5.18, 11.43 - 8.2 - 0.25, 'right', 17);
+}
+{
+  const s = slide('TITLE', PAPER, 40, `
+Good morning. My name is Captain Scott Russell, and this is my creative component for the master's in cybersecurity: an analysis of a card-shuffle stream cipher designed by my major professor, Dr. Daniels.
+
+The whole talk rests on one idea, and I'll say it now so you can hold me to it: if you shrink a cipher until you can count every possibility, questions that everyone else has had to estimate become questions you can simply answer.`);
+  titlePage(s);
 }
 {
   const s = slide('CONTENT', 'About Me', 45, `
@@ -3373,20 +3379,14 @@ The thesis I started with: shrink the cipher until every state fits in memory, a
   ], { x: 0.85, y: 5.15, w: 11.6, h: 1.25, margin: 0, valign: 'middle', fontFace: 'Calibri', isTextBox: true });
 }
 {
-  // The last word (Scott, 2026-10-05): a short title and the impact in one line, with the site's QR code so the room
-  // can take the slides and the paper with them. The 26-card question closes Future Work, a backup since 2026-10-05.
-  const s = slide('CLOSING', 'Every State Counted', 30, `
+  // The last page mirrors the first (Scott, 2026-10-05): the paper's name, the presenter and the site's QR code, so the
+  // room can take the slides and the paper with them. It was "Every State Counted"; its one line is in the notes. The
+  // 26-card question closes Future Work, a backup since 2026-10-05.
+  const s = slide('TITLE', PAPER, 30, `
 Hand ciphers have always been judged by sampling, because that's all their size allowed. This work shows that if you shrink the deck until the states fit in memory, those questions become counting instead of estimating. Six and a half billion states. Twelve configurations. One laptop. Nothing estimated.
 
 Thank you. In particular, thank you to Dr. Daniels for the cipher and the weekly questions that shaped this, and to my wife, Sydney. The slides and the full paper are online at the code on the screen. I'm happy to take your questions.`);
-  s.addText([{ text: '6.5 billion states. 12 configurations. One laptop.', options: { breakLine: true } },
-    { text: 'Nothing estimated.', options: { bold: true, color: C.accent2 } }],
-  { x: 0.8, y: 3.55, w: 9.0, h: 1.3, margin: 0, fontFace: 'Calibri', fontSize: 26, color: C.background1, valign: 'top', isTextBox: true, paraSpaceAfter: 6 });
-  s.addText([{ text: 'Thank you. Questions?', options: { bold: true, fontSize: 28, breakLine: true } },
-    { text: 'Capt Scott D. Russell · With thanks to Dr. Thomas E. Daniels, and to Sydney', options: { fontSize: 17 } }],
-  { x: 0.8, y: 5.45, w: 9.2, h: 1.2, margin: 0, fontFace: 'Calibri', color: C.background1, valign: 'top', isTextBox: true });
-  const qx = 10.25, qy = 1.35, qw = qrCard(s, qx, qy, 2.1);
-  siteText(s, qx - 0.4, qy + qw + 0.2, qw + 0.8, 'center', 17);
+  titlePage(s);
 }
 
 // =================================================================== BACKUP
