@@ -2199,7 +2199,10 @@
     rd('rdBadge', 'dot', {}, { x: fx + fw - 4, y: fy + 4, r: 25, fill: GOLD, stroke: '#FFFFFF', sw: 3, z: 42 });
     rd('rdNum', 'text', { size: 30, weight: 700, anchor: 'middle' }, { x: fx + fw - 4, y: fy + 15, content: String(cut), z: 43 });
     const frameAt = (s, x, y) => { Object.assign(s.rdBox, { x, y }); Object.assign(s.rdBadge, { x: x + fw - 4, y: y + 4 }); Object.assign(s.rdNum, { x: x + fw - 4, y: y + 15 }); };
-    const LIT = ['rdRB', 'rdBox', 'rdBadge', 'rdNum'];
+    const LIT = ['rdRB', 'rdBox', 'rdBadge', 'rdNum'], SETTING = ['rdRB', 'rdRT', 'rdRV'];
+    // where the boxed setting lands: a frame around the grid's own r = 3 label (Scott, 2026-10-06)
+    const HDR = { x: ZX[2] - 58, y: 22, w: 116, h: 54, rx: 12, sw: 4 };
+    const rise = (id) => (id === 'rdRT' ? { w: [0, 0.35] } : id === 'zCol2' ? { w: [0.55, 1] } : null);
 
     return () => {
       // ---- step 0: what the rotation setting does, replayed from the breakdown (Scott, 2026-10-06)
@@ -2219,11 +2222,20 @@
       S.beat(0.35, (s) => { s.rdBox.o = 0; s.rdBadge.o = 0; s.rdNum.o = 0; });
       S.hold(0.3);
 
-      // ---- step 1: one row of the grid
-      S.step({ say: 'This is the surprise of the project. Same eight-card cipher, four rotation settings: the bottom row of the grid. The same cut moves zero, one, three or five cards at the end of each round, an implementation detail with no cryptographic reason behind it.' });
+      // ---- step 1: first the tie (Scott, 2026-10-06): the boxed r = 3 rises into the grid and frames its own column's
+      // label, r = 3; then the frame hands over to the 8-card row, one highlight at a time
+      S.step({ say: 'That rotation of three is this column of the grid: r equals 3. The study tried four settings, zero, one, three and five: the same cut, moving that many cards at the end of each round. And this is the surprise of the project. The bottom row is the same eight-card cipher at each setting, an implementation detail with no cryptographic reason behind it.' });
       S.beat(0.45, (s) => cap(s, 'Same 8-card cipher, four rotation settings',
-        'The bottom row of the grid: the same cut moves 0, 1, 3 or 5 cards at the end of each round.\nAn implementation detail with no cryptographic reason behind it.'));
-      S.beat(0.7, (s) => { RD_IDS.forEach((k) => { s[k].o = 0; }); others.forEach((k) => { s[k].o = 0.25; }); ROW8.forEach((k) => { s[k].o = 1; }); s.rowBox.o = 1; });
+        'The r = 3 just replayed is one column of the grid. The same cut moves 0, 1, 3 or 5 cards at the end of each round.\nThe bottom row is the 8-card cipher at each setting: an implementation detail with no cryptographic reason behind it.'));
+      S.beat(0.45, (s) => { RD_IDS.forEach((k) => { if (!SETTING.includes(k)) s[k].o = 0; }); });
+      S.beat(1.0, (s) => {
+        Object.assign(s.rdRB, HDR);
+        Object.assign(s.rdRT, { x: HDR.x + 18, y: HDR.y + 30, o: 0 });
+        Object.assign(s.rdRV, { x: ZX[2] - 31, y: 62, o: 0 });
+        s.zCol2.o = 1;
+      }, rise);
+      S.hold(0.7);
+      S.beat(0.7, (s) => { s.rdRB.o = 0; others.forEach((k) => { s[k].o = 0.25; }); ROW8.forEach((k) => { s[k].o = 1; }); s.rowBox.o = 1; });
       S.hold(0.3);
 
       // ---- step 1: one bar per rotation
