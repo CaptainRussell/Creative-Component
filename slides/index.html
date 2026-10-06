@@ -2154,7 +2154,10 @@
   }
 
   // ---- rotation
-  // The rotation slide opens on the grid of 12, then the 8-card row unrolls into one bar per rotation setting.
+  // The rotation slide opens on the grid of 12. Its first click replays the breakdown's rotation (Scott, 2026-10-06): the
+  // Discard Pile at the end of round 1, 4♠ A♠ 3♠ 2♠, cut by r = 3 exactly as on slide 10 (same cards, gold frame, count
+  // badge and boxed "Rotation setting"), so the room sees what the setting does before seeing what it does to the cycles.
+  // Then the 8-card row is framed and unrolls into one bar per rotation setting.
   function buildRotation(S) {
     const { CONFIGS, cellIds } = S.grid, I = 2, BY = [150, 300, 450, 600], RC = 300, BX = 430, BW = 1020, BH = 72;
     S.add('rowBox', 'rect', {}, { x: 44, y: ZY[I] - 92, w: 1800, h: 226, rx: 18, fill: '#FFFFFF', fo: 0, stroke: GOLD, sw: 5, o: 0, z: 2 });
@@ -2170,13 +2173,57 @@
     S.add('why', 'text', { size: 24, weight: 700 }, { x: BX, y: 712, content: 'Why does one cut of the Discard Pile do this? Not yet known: observed, not derived.', fill: RED, o: 0 });
     const others = ['zRow0', 'zSts0', 'zRow1', 'zSts1', 'z03m'];
     for (let i = 0; i < 2; i++) for (let j = 0; j < 4; j++) others.push(...cellIds(i, j));
+    // the 8-card row and the rotation labels, dimmed while the replay plays above them
+    const ROW8 = ['zRow2', 'zSts2', 'zNote', 'zCol0', 'zCol1', 'zCol2', 'zCol3'];
+    for (let j = 0; j < 4; j++) ROW8.push(...cellIds(I, j));
+
+    // The replay of the breakdown's rotation, in the space the grid's top two rows leave: the Discard Pile row as slide
+    // 10 draws it (label, card positions, top and bottom, ROTATE · 3) and its "Rotation setting r = 3" box beside it.
+    const RD = { y: 150, x0: 420, p: 136 }, rdx = (i) => RD.x0 + i * RD.p, RD_IDS = [];
+    const rd = (id, kind, cfg, st) => { RD_IDS.push(id); S.add(id, kind, cfg, Object.assign({ o: 0 }, st)); };
+    const pile = C.fullRound(START_DRIVE.slice(), START_SEARCH.slice(), ROT).discard;   // 4♠ A♠ 3♠ 2♠, top to bottom
+    const cut = ROT % N, moving = pile.slice(0, cut), after = pile.slice(cut).concat(moving);
+    const fw = (cut - 1) * RD.p + CARD_W + 18, fx = rdx(0) - 9, fy = RD.y - 9, dx = (N - cut) * RD.p;
+    rd('rdT', 'text', { size: 27, weight: 700, ls: 1.5 }, { x: 72, y: RD.y + 70, content: 'DISCARD PILE' });
+    rd('rdS', 'text', { size: 21 }, { x: 72, y: RD.y + 102, content: 'spent cards, first one on top', fill: GREY });
+    rd('rdOp', 'text', { size: 24, weight: 700, ls: 1 }, { x: 72, y: RD.y + 140, content: `ROTATE · ${cut}`, fill: RED });
+    for (let i = 0; i < N; i++) rd('rdSlot' + i, 'rect', { dash: '9 7' }, { x: rdx(i), y: RD.y, w: CARD_W, h: CARD_H, rx: 12, fill: '#FFFFFF', fo: 0, stroke: LIGHT, sw: 2, z: 1 });
+    rd('rdTop', 'text', { size: 19, anchor: 'middle' }, { x: rdx(0) + CARD_W / 2, y: RD.y + CARD_H + 22, content: 'top', fill: MID });
+    rd('rdBot', 'text', { size: 19, anchor: 'middle' }, { x: rdx(N - 1) + CARD_W / 2, y: RD.y + CARD_H + 22, content: 'bottom', fill: MID });
+    pile.forEach((id, i) => rd('rdC' + id, 'card', { suit: id[0], v: C.val(id), w: CARD_W, h: CARD_H }, { x: rdx(i), y: RD.y, z: 10 }));
+    rd('rdRT', 'text', { size: 22, weight: 700 }, { x: 1040, y: RD.y + 55, content: 'Rotation setting' });
+    rd('rdRV', 'text', { size: 24 }, { x: 1040, y: RD.y + 91, content: `r = ${ROT}` });
+    rd('rdRB', 'rect', {}, { x: 1022, y: RD.y + 21, w: 236, h: 92, rx: 14, fill: '#FFFFFF', fo: 0, stroke: GOLD, sw: 5, z: 1 });
+    // the cut's gold frame and its count, which travel with the cards
+    rd('rdBox', 'rect', {}, { x: fx, y: fy, w: fw, h: CARD_H + 18, rx: 18, fill: '#FFFFFF', fo: 0, stroke: GOLD, sw: 5, z: 41 });
+    rd('rdBadge', 'dot', {}, { x: fx + fw - 4, y: fy + 4, r: 25, fill: GOLD, stroke: '#FFFFFF', sw: 3, z: 42 });
+    rd('rdNum', 'text', { size: 30, weight: 700, anchor: 'middle' }, { x: fx + fw - 4, y: fy + 15, content: String(cut), z: 43 });
+    const frameAt = (s, x, y) => { Object.assign(s.rdBox, { x, y }); Object.assign(s.rdBadge, { x: x + fw - 4, y: y + 4 }); Object.assign(s.rdNum, { x: x + fw - 4, y: y + 15 }); };
+    const LIT = ['rdRB', 'rdBox', 'rdBadge', 'rdNum'];
 
     return () => {
-      // ---- step 0: one row of the grid
-      S.step({ say: 'This is the surprise of the project. Same eight-card cipher, four rotation settings: the bottom row of the grid. Remember, the rotation is just how far you cut the Discard Pile at the end of each round, an implementation detail with no cryptographic reason behind it.' });
+      // ---- step 0: what the rotation setting does, replayed from the breakdown (Scott, 2026-10-06)
+      S.step({ say: 'Before the result, a reminder of what the rotation setting is. Remember the breakdown: at the end of every round, the Discard Pile is cut by the rotation setting. There it was three, so the top three cards moved to the bottom. That one cut is the only thing that changes in what comes next.' });
+      S.beat(0.45, (s) => cap(s, 'Remember the rotation setting: one cut of the Discard Pile',
+        'At the end of every round, the top r cards of the Discard Pile move to the bottom. In the breakdown r = 3, so three cards moved.\nThat one cut is the only thing that changes across the four settings that follow.'));
+      S.beat(0.6, (s) => { others.forEach((k) => { s[k].o = 0; }); ROW8.forEach((k) => { s[k].o = 0.25; }); });
+      S.beat(0.6, (s) => { RD_IDS.forEach((k) => { if (!LIT.includes(k)) s[k].o = 1; }); });
+      S.hold(0.3);
+      S.beat(0.45, (s) => { s.rdRB.o = 1; });                                   // the setting lights up...
+      S.beat(0.45, (s) => { s.rdBox.o = 1; s.rdBadge.o = 1; s.rdNum.o = 1; });   // ...and frames the cards it moves
+      S.hold(0.25);
+      S.beat(0.35, (s) => { moving.forEach((id) => { s['rdC' + id].y = RD.y - 46; s['rdC' + id].z = 30; }); frameAt(s, fx, fy - 46); });
+      S.beat(0.85, (s) => { after.forEach((id, i) => { s['rdC' + id].x = rdx(i); }); frameAt(s, fx + dx, fy - 46); });
+      S.beat(0.35, (s) => { moving.forEach((id) => { s['rdC' + id].y = RD.y; s['rdC' + id].z = 10; }); frameAt(s, fx + dx, fy); });
+      S.hold(0.25);
+      S.beat(0.35, (s) => { s.rdBox.o = 0; s.rdBadge.o = 0; s.rdNum.o = 0; });
+      S.hold(0.3);
+
+      // ---- step 1: one row of the grid
+      S.step({ say: 'This is the surprise of the project. Same eight-card cipher, four rotation settings: the bottom row of the grid. The same cut moves zero, one, three or five cards at the end of each round, an implementation detail with no cryptographic reason behind it.' });
       S.beat(0.45, (s) => cap(s, 'Same 8-card cipher, four rotation settings',
-        'The bottom row of the grid. The rotation only sets how far the Discard Pile is cut at the end of each round:\nan implementation detail with no cryptographic reason behind it.'));
-      S.beat(0.7, (s) => { others.forEach((k) => { s[k].o = 0.25; }); s.rowBox.o = 1; });
+        'The bottom row of the grid: the same cut moves 0, 1, 3 or 5 cards at the end of each round.\nAn implementation detail with no cryptographic reason behind it.'));
+      S.beat(0.7, (s) => { RD_IDS.forEach((k) => { s[k].o = 0; }); others.forEach((k) => { s[k].o = 0.25; }); ROW8.forEach((k) => { s[k].o = 1; }); s.rowBox.o = 1; });
       S.hold(0.3);
 
       // ---- step 1: one bar per rotation
@@ -3310,7 +3357,7 @@ animation('loops', 85);
 animation('scope', 50);
 animation('growth', 60);
 animation('shares', 60);
-animation('rotation', 90);
+animation('rotation', 105);    // its first click replays the breakdown's rotation (Scott, 2026-10-06)
 // Rotation Analysis at 8 Deck Size, moved here from Key Analysis (2026-10-05) as the rotation slide's conclusion, then
 // made the sixth part of the cycles animation so it grows out of that slide's last frame (Scott, 2026-10-05).
 animation('analysis', 45);
