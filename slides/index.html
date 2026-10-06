@@ -814,6 +814,25 @@
     return ids;
   }
 
+  // ---- Agent Alice and Agent Bob as people: a white face with a black outline; Agent Alice with hair to her shoulders
+  // and a cardinal top, Agent Bob with short hair and a charcoal top. The wire draws them full size above their panels.
+  const AGENT_BODY = 'M -46 64 C -46 27 -26 15 0 15 C 26 15 46 27 46 64 Z';
+  const AGENT_HAIR = { long: 'M -31 -12 C -33 -62 33 -62 31 -12 L 33 22 C 20 29 -20 29 -33 22 Z',
+    short: 'M -25 -15 C -27 -50 27 -50 25 -15 C 19 -28 -11 -33 -25 -15 Z' };
+  // The same people, small, beside the message rows of slides 6 and 12 (Scott, 2026-10-06): Agent Alice ('A') by "what
+  // Agent Alice wants to say", Agent Bob ('B') by "what reaches Agent Bob". Centred on cx, shoulders ending at foot,
+  // scaled by sc; added hidden. Returns the ids.
+  const BADGE = { cx: 100, sc: 0.6, indent: 67 };   // the row's words move right by indent to clear the figure
+  function agentBadge(S, pre, who, foot) {
+    const long = who === 'A', sc = BADGE.sc, cy = foot - 64 * sc, ids = [];
+    const add = (k, kind, cfg, st) => { ids.push(pre + k); S.add(pre + k, kind, cfg, Object.assign({ x: BADGE.cx, y: cy, s: sc, o: 0 }, st)); };
+    if (long) add('Hair', 'path', { d: AGENT_HAIR.long }, { fill: INK, sw: 0 });
+    add('Body', 'path', { d: AGENT_BODY }, { fill: long ? RED : CHAR, sw: 0 });
+    add('Face', 'dot', {}, { y: cy + (long ? -13 : -15) * sc, r: long ? 20 : 23, fill: '#FFFFFF', stroke: INK, sw: 3 * sc });
+    if (!long) add('Hair', 'path', { d: AGENT_HAIR.short }, { fill: INK, sw: 0 });
+    return ids;
+  }
+
   // ---- the packet on the wire, shared by the stream-cipher slide and the end of the worked example so the two
   // pictures match: Agent Alice sends, Agent Bob receives, and Eve, the eavesdropper tapping the line, keeps a useless copy.
   // Adds every object (ids start with pre), so call it before the scene's first step; returns the ids and play(hide),
@@ -823,9 +842,7 @@
     const add = (k, kind, cfg, st) => { ids.push(pre + k); S.add(pre + k, kind, cfg, st); };
     // Each agent is drawn as a person above their panel, level with Eve's eye and in its style (white face, black
     // outline): Agent Alice with hair to her shoulders and a cardinal top, Agent Bob with short hair and a charcoal one.
-    const BODY = 'M -46 64 C -46 27 -26 15 0 15 C 26 15 46 27 46 64 Z';
-    const HAIR = { long: 'M -31 -12 C -33 -62 33 -62 31 -12 L 33 22 C 20 29 -20 29 -33 22 Z',
-      short: 'M -25 -15 C -27 -50 27 -50 25 -15 C 19 -28 -11 -33 -25 -15 Z' };
+    const BODY = AGENT_BODY, HAIR = AGENT_HAIR;
     const person = (k, cx, cy, col, long) => {
       if (long) add(k + 'Hair', 'path', { d: HAIR.long }, { x: cx, y: cy, fill: INK, sw: 0, o: 0 });
       add(k + 'Body', 'path', { d: BODY }, { x: cx, y: cy, fill: col, sw: 0, o: 0 });
@@ -903,11 +920,13 @@
     const tx = (i) => TX + i * 124;
     const MX = 1400, MY = 330;                                            // numbers leave from inside the machine
 
-    const rowLabel = (key, y, title, sub) => {
-      S.add(key + 'T', 'text', { size: 27, weight: 700, ls: 1.5 }, { x: 72, y: y + 50, content: title, o: 0 });
-      S.add(key + 'S', 'text', { size: 21 }, { x: 72, y: y + 82, content: sub, fill: GREY, o: 0 });
+    const rowLabel = (key, y, title, sub, indent) => {
+      S.add(key + 'T', 'text', { size: 27, weight: 700, ls: 1.5 }, { x: 72 + (indent || 0), y: y + 50, content: title, o: 0 });
+      S.add(key + 'S', 'text', { size: 21 }, { x: 72 + (indent || 0), y: y + 82, content: sub, fill: GREY, o: 0 });
     };
-    rowLabel('rowA', RY.a, 'MESSAGE', 'what Agent Alice wants to say');
+    rowLabel('rowA', RY.a, 'MESSAGE', 'what Agent Alice wants to say', BADGE.indent);
+    // Agent Alice beside her message; Agent Bob takes her place when the row becomes what reaches him
+    const AV_A = agentBadge(S, 'avA', 'A', RY.a + 87), AV_B = agentBadge(S, 'avB', 'B', RY.a + 87);
     rowLabel('rowB', RY.b, '+ SECRET STREAM', 'example numbers, one per letter');   // made up, not the cipher's (2026-10-05)
     rowLabel('rowC', RY.c, '= WHAT IS SENT', 'each letter shifted forward');
 
@@ -985,7 +1004,7 @@
 
     // ---- step 0: the message
     S.step({ say: 'Here is all the cryptography you need for this talk, in one picture. Two agents need to talk in secret: Agent Alice and Agent Bob. Agent Alice starts with a message: ATTACK.' });
-    S.beat(0.45, (s) => { cap(s, 'Agent Alice starts with a message', 'This is what Agent Alice wants to tell Agent Bob, and what nobody else should be able to read.'); s.rowAT.o = 1; s.rowAS.o = 1; });
+    S.beat(0.45, (s) => { cap(s, 'Agent Alice starts with a message', 'This is what Agent Alice wants to tell Agent Bob, and what nobody else should be able to read.'); s.rowAT.o = 1; s.rowAS.o = 1; AV_A.forEach((k) => { s[k].o = 1; }); });
     S.beat(1.0, (s) => { for (let i = 0; i < 6; i++) { s['aT' + i].o = 1; s['aL' + i].o = 1; } },
       (id) => { const m = id.match(/^a[TL](\d)$/); return m ? { w: [+m[1] * 0.1, +m[1] * 0.1 + 0.5] } : null; });
     S.hold(0.3);
@@ -1020,7 +1039,7 @@
       'Without the stream, DHAAXT says nothing. The two Ts in ATTACK became different letters, H and A,\nso even a repeated letter leaves no pattern to work from.'));
     S.beat(0.7, (s) => {
       for (let i = 0; i < 6; i++) { s['aT' + i].o = 0.2; s['aL' + i].o = 0.2; s['bT' + i].o = 0.2; s['bN' + i].o = 0.2; }
-      ['rowAT', 'rowAS', 'rowBT', 'rowBS'].concat(MACHINE).forEach((k) => { s[k].o = 0.2; });
+      ['rowAT', 'rowAS', 'rowBT', 'rowBS'].concat(MACHINE, AV_A).forEach((k) => { s[k].o = 0.2; });
     });
     S.beat(0.5, (s) => { s.eyeO.o = 1; s.eyeI.o = 1; s.eyeP.o = 1; });
     S.beat(0.5, (s) => { s.eyeA.draw = 1; s.eyeT.o = 1; s.eyeS.o = 1; for (let i = 0; i < 6; i++) { s['cT' + i].stroke = GOLD; s['cT' + i].sw = 5; } });
@@ -1031,7 +1050,7 @@
     S.beat(0.45, (s) => cap(s, 'The packet crosses the wire from Agent Alice to Agent Bob',
       'Agent Alice sends only DHAAXT. Eve, tapping the line, can copy it, but without the stream it says nothing.\nAgent Bob receives exactly the same six letters.'));
     net.play((s) => {
-      ['rowAT', 'rowAS', 'rowBT', 'rowBS', 'rowCT', 'rowCS'].concat(MACHINE, EYE).forEach((k) => { s[k].o = 0; });
+      ['rowAT', 'rowAS', 'rowBT', 'rowBS', 'rowCT', 'rowCS'].concat(MACHINE, EYE, AV_A).forEach((k) => { s[k].o = 0; });
       for (let i = 0; i < 6; i++) ['aT', 'aL', 'bT', 'bN', 'cT', 'cL'].forEach((p) => { s[p + i].o = 0; });
     });
     S.hold(0.3);
@@ -1048,6 +1067,7 @@
     S.beat(0.9, (s) => {                                    // what arrives takes the top row
       for (let i = 0; i < 6; i++) { s['cT' + i].y = RY.a; s['cL' + i].y = RY.a + 72; s['cT' + i].o = 1; s['cL' + i].o = 1; }
       s.rowAT.content = 'RECEIVED'; s.rowAS.content = 'what reaches Agent Bob'; s.rowAT.o = 1; s.rowAS.o = 1;
+      AV_B.forEach((k) => { s[k].o = 1; });
     });
     S.beat(0.02, (s) => { for (let i = 0; i < 6; i++) { s['bN' + i].x = MX; s['bN' + i].y = MY; } });   // back inside, unseen
     S.beat(0.5, (s) => {
@@ -1182,28 +1202,31 @@
     const WORD = 'HACK';
     const shiftL = (ch, k) => String.fromCharCode(65 + ((((ch.charCodeAt(0) - 65 + k) % 26) + 26) % 26));
     const CIPH = WORD.split('').map((ch, i) => shiftL(ch, KV[i]));                     // I C D N
-    const EY = { a: 64, b: 268, c: 472 }, ET = 116, EDGE = '#CFCFCF';
-    const erow = (key, y, title, sub) => {
-      S.add(key + 'T', 'text', { size: 27, weight: 700, ls: 1.5 }, { x: 72, y: y + 54, content: title, o: 0 });
-      S.add(key + 'S', 'text', { size: 21 }, { x: 72, y: y + 86, content: sub, fill: GREY, o: 0 });
+    // the letter tiles sit 30 px right of the card columns, so the words beside Agent Alice and Agent Bob clear them
+    const EY = { a: 64, b: 268, c: 472 }, ET = 116, EDGE = '#CFCFCF', ex = (i) => sx(i) + 30;
+    const erow = (key, y, title, sub, indent) => {
+      S.add(key + 'T', 'text', { size: 27, weight: 700, ls: 1.5 }, { x: 72 + (indent || 0), y: y + 54, content: title, o: 0 });
+      S.add(key + 'S', 'text', { size: 21 }, { x: 72 + (indent || 0), y: y + 86, content: sub, fill: GREY, o: 0 });
     };
-    erow('eA', EY.a, 'MESSAGE', 'what Agent Alice wants to say');
+    erow('eA', EY.a, 'MESSAGE', 'what Agent Alice wants to say', BADGE.indent);
+    // Agent Alice beside her message, then Agent Bob beside what reaches him, as on the stream-cipher slide
+    const EV_A = agentBadge(S, 'evA', 'A', EY.a + 91), EV_B = agentBadge(S, 'evB', 'B', EY.a + 91);
     erow('eB', EY.b, '+ KEYSTREAM', 'the four card values');
     erow('eC', EY.c, '= WHAT IS SENT', 'each letter shifted forward');
     const ELET = { size: 58, weight: 700, anchor: 'middle', family: root.Anim.SERIF };
     for (let i = 0; i < 4; i++) {
-      const cx = sx(i) + ET / 2;
-      S.add('wT' + i, 'rect', {}, { x: sx(i), y: EY.a, w: ET, h: ET, rx: 12, fill: '#FFFFFF', stroke: EDGE, sw: 2, o: 0, z: 50 });
+      const cx = ex(i) + ET / 2;
+      S.add('wT' + i, 'rect', {}, { x: ex(i), y: EY.a, w: ET, h: ET, rx: 12, fill: '#FFFFFF', stroke: EDGE, sw: 2, o: 0, z: 50 });
       S.add('wL' + i, 'text', ELET, { x: cx, y: EY.a + 79, content: WORD[i], o: 0, z: 51 });
-      S.add('vT' + i, 'rect', {}, { x: sx(i), y: EY.b, w: ET, h: ET, rx: 12, fill: '#F3F3F3', stroke: EDGE, sw: 2, o: 0, z: 50 });
+      S.add('vT' + i, 'rect', {}, { x: ex(i), y: EY.b, w: ET, h: ET, rx: 12, fill: '#F3F3F3', stroke: EDGE, sw: 2, o: 0, z: 50 });
       S.add('vN' + i, 'text', { size: 52, weight: 700, anchor: 'middle', family: root.Anim.SERIF },
         { x: KX + i * KP + (CARD_W * KS) / 2, y: KY + 68, content: String(KV[i]), fill: RED, o: 0, z: 52 });
-      S.add('xT' + i, 'rect', {}, { x: sx(i), y: EY.c, w: ET, h: ET, rx: 12, fill: '#FFFFFF', stroke: GOLD, sw: 4, o: 0, z: 50 });
+      S.add('xT' + i, 'rect', {}, { x: ex(i), y: EY.c, w: ET, h: ET, rx: 12, fill: '#FFFFFF', stroke: GOLD, sw: 4, o: 0, z: 50 });
       S.add('xL' + i, 'text', ELET, { x: cx, y: EY.c + 79, content: WORD[i], o: 0, z: 51 });
-      S.add('yT' + i, 'rect', {}, { x: sx(i), y: EY.c, w: ET, h: ET, rx: 12, fill: '#FFFFFF', stroke: GOLD, sw: 4, o: 0, z: 50 });
+      S.add('yT' + i, 'rect', {}, { x: ex(i), y: EY.c, w: ET, h: ET, rx: 12, fill: '#FFFFFF', stroke: GOLD, sw: 4, o: 0, z: 50 });
       S.add('yL' + i, 'text', ELET, { x: cx, y: EY.c + 79, content: CIPH[i], o: 0, z: 51 });
     }
-    S.add('eOk', 'text', { size: 27, weight: 700 }, { x: sx(4) + 14, y: EY.c + 68, content: '✓ the message, exactly', fill: RED, o: 0 });
+    S.add('eOk', 'text', { size: 27, weight: 700 }, { x: ex(4) + 14, y: EY.c + 68, content: '✓ the message, exactly', fill: RED, o: 0 });
     // the packet on the wire: the same picture as on the stream-cipher slide, because this is that stream cipher
     const net = wire(S, 'tw', CIPH.join(''), 'Eve’s copy: unreadable without the keystream', 'received: the same four letters');
 
@@ -1442,9 +1465,9 @@
       status(s, 'USING THE KEYSTREAM', 'one value per letter');
     });
     S.beat(0.7, (s) => { DECK_IDS.forEach((k) => { s[k].o = 0; }); });
-    S.beat(0.8, (s) => { ['eAT', 'eAS', 'eBT', 'eBS'].forEach((k) => { s[k].o = 1; }); for (let i = 0; i < 4; i++) { s['wT' + i].o = 1; s['wL' + i].o = 1; s['vT' + i].o = 1; } },
+    S.beat(0.8, (s) => { ['eAT', 'eAS', 'eBT', 'eBS'].concat(EV_A).forEach((k) => { s[k].o = 1; }); for (let i = 0; i < 4; i++) { s['wT' + i].o = 1; s['wL' + i].o = 1; s['vT' + i].o = 1; } },
       (id) => { const m = id.match(/^w[TL](\d)$/); return m ? { w: [+m[1] * 0.12, +m[1] * 0.12 + 0.5] } : null; });
-    S.beat(1.8, (s) => { for (let i = 0; i < 4; i++) { s['vN' + i].x = sx(i) + ET / 2; s['vN' + i].y = EY.b + 77; s['vN' + i].o = 1; } }, vnFly);
+    S.beat(1.8, (s) => { for (let i = 0; i < 4; i++) { s['vN' + i].x = ex(i) + ET / 2; s['vN' + i].y = EY.b + 77; s['vN' + i].o = 1; } }, vnFly);
     S.hold(0.3);
 
     S.step({ say: 'Agent Alice encrypts exactly as before: shift each letter forward by its value. H plus 1 is I, A plus 2 is C, C plus 1 is D, and K plus 3 is N. What gets sent is I, C, D, N. Notice the C that gets sent stands for an A, while the C in HACK became a D.' });
@@ -1463,7 +1486,7 @@
       // the panel keeps ENCRYPT until the wire clears it (Scott, 2026-10-05: ON THE WIRE showed for only a second)
     });
     net.play((s) => {
-      RIGHT.concat(['eAT', 'eAS', 'eBT', 'eBS', 'eCT', 'eCS']).forEach((k) => { s[k].o = 0; });
+      RIGHT.concat(['eAT', 'eAS', 'eBT', 'eBS', 'eCT', 'eCS'], EV_A).forEach((k) => { s[k].o = 0; });
       for (let i = 0; i < 4; i++) ['wT', 'wL', 'vT', 'vN', 'xT', 'xL'].forEach((p) => { s[p + i].o = 0; });
     });
     S.hold(0.3);
@@ -1482,10 +1505,11 @@
     S.beat(0.9, (s) => {                                        // what arrives takes the top row
       for (let i = 0; i < 4; i++) { s['xT' + i].y = EY.a; s['xL' + i].y = EY.a + 79; s['xT' + i].o = 1; s['xL' + i].o = 1; s['vT' + i].o = 1; }
       s.eAT.content = 'RECEIVED'; s.eAS.content = 'what reaches Agent Bob'; s.eAT.o = 1; s.eAS.o = 1;
+      EV_B.forEach((k) => { s[k].o = 1; });
       s.eBT.content = '− SAME KEYSTREAM'; s.eBS.content = 'same key, same four values'; s.eBT.o = 1; s.eBS.o = 1;
     });
     for (let i = 0; i < 4; i++) S.beat(0.2, (s) => { s['ksTile' + i].stroke = GOLD; s['ksTile' + i].sw = 5; });  // the same four values, again
-    S.beat(1.8, (s) => { for (let i = 0; i < 4; i++) { s['vN' + i].x = sx(i) + ET / 2; s['vN' + i].y = EY.b + 77; s['vN' + i].o = 1; } }, vnFly);
+    S.beat(1.8, (s) => { for (let i = 0; i < 4; i++) { s['vN' + i].x = ex(i) + ET / 2; s['vN' + i].y = EY.b + 77; s['vN' + i].o = 1; } }, vnFly);
     S.beat(0.4, (s) => { s.eCT.content = '= MESSAGE'; s.eCS.content = 'each letter shifted back'; s.eCT.o = 1; s.eCS.o = 1; });
     for (let i = 0; i < 4; i++) eshift(i, -1, 0.3);
     S.beat(0.5, (s) => { s.eOk.o = 1; });
