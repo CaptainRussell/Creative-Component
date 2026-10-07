@@ -2382,7 +2382,7 @@
       // ---- step 0: the rotation slide's four rows turn into four cards
       S.step({ say: 'Putting it together at eight cards. Here are the four rotations side by side: the typical period, which is how long a typical stream runs before it repeats; the share of all states in the largest cycle; and the shortest cycle a real key can reach.' });
       S.beat(0.45, (s) => cap(s, 'The four analyzed rotations, side by side',
-        'At 8 cards: how long a typical stream runs, how big the largest cycle is, and the shortest cycle a real key reaches.\nFour of the 8 possible rotations; this says nothing about randomness or about 26 cards.'));
+        'At 8 cards: how long until a typical stream repeats, how big the largest cycle is, and the shortest cycle a real key reaches.\nFour of the 8 possible rotations; this says nothing about randomness or about 26 cards.'));
       S.beat(0.6, (s) => {
         gone.forEach((k) => { if (s[k]) s[k].o = 0; });
         for (let j = 0; j < 4; j++) s[`rr${j}0t`].fill = INK;     // off its red bar, the share turns dark
@@ -3442,7 +3442,7 @@ The small pictures are the animations coming up; the summary brings them back.`)
       { x: x + 0.3, y: y + 1.35, w: w - 0.6, h: 2.2, margin: 0, valign: 'top', fontFace: 'Calibri', isTextBox: true, paraSpaceAfter: 6 });
   });
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 5.5, w: 12.333, h: 1.2, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'takeaway panel' });
-  s.addText([{ text: 'Why it matters: ', options: { bold: true, color: C.accent1 } }, { text: 'a stream repeats when its cycle comes back around, so big cycles mean long streams.', options: { color: C.text1 } }],
+  s.addText([{ text: 'Why it matters: ', options: { bold: true, color: C.accent1 } }, { text: 'a stream repeats when its cycle comes back around, so the bigger the cycle, the longer until it repeats.', options: { color: C.text1 } }],
     { x: 0.85, y: 5.5, w: 11.7, h: 1.2, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 20, isTextBox: true });
 }
 animation('loops', 85);
@@ -3511,7 +3511,7 @@ Two: Dr. Daniels' cipher makes that stream with two decks and a Discard Pile, on
 
 Three: every arrangement of the decks sits on exactly one cycle, so the stream repeats only when its cycle comes back around. I counted every arrangement, all 1.6 billion at eight cards: a few giant cycles hold almost every state, and the rotation setting reshapes them.
 
-What's left is the key. A key decides where the decks start, so it decides which cycle you are on, and how long your stream runs.`);
+What's left is the key. A key decides where the decks start, so it decides which cycle you are on, and how long until your stream repeats. The stream itself never runs out; what matters is when it repeats, because from that moment it leaks information.`);
   // One small picture per part, like the Part 3 summary's (Scott, 2026-10-05): the wire from part 1 (Agent Alice, the
   // packet, Agent Bob, Eve's eye on the tap), the breakdown's two decks over the empty Discard Pile, and the cycles.
   const rows = [
@@ -3533,15 +3533,15 @@ What's left is the key. A key decides where the decks start, so it decides which
   });
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 6.0, w: 12.333, h: 0.85, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'bridge panel' });
   s.addText([{ text: 'Next, Key Analysis: ', options: { bold: true, color: C.accent1 } },
-    { text: 'a key sets where the decks start, so it decides which cycle the stream runs on, and how long it lasts.', options: { color: C.text1 } }],
+    { text: 'a key sets where the decks start, so it decides which cycle the stream runs on, and how long until it repeats.', options: { color: C.text1 } }],
   { x: 0.85, y: 6.0, w: 11.7, h: 0.85, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 18, isTextBox: true });
 }
 
 // =================================================================== KEYS (Ch 5)
 newSection('Daniels’ Cipher: Key Analysis (Ch 5)');
-// The line counts the keys and defines a weak key (Scott's father, 2026-10-06).
+// The line counts the keys and defines a weak key (Scott's father, 2026-10-06), one sentence per line (Scott).
 divider('4', 'H', 'Daniels’ Cipher: Key Analysis', 'Chapter 5',
-  'A key is a word of n letters from an n-letter alphabet, so there are nⁿ keys: 256 at 4 cards, 16.8 million at 8. A weak key lands on a cycle shorter than n! rounds: 24 at 4 cards, 40,320 at 8.',
+  'A key is a word of n letters from an n-letter alphabet, so there are nⁿ keys: 256 at 4 cards, 16.8 million at 8.\nA weak key lands on a cycle shorter than n! rounds: 24 at 4 cards, 40,320 at 8.',
   'Part four: keys. A key is a word as long as the deck, from an alphabet as big as the deck, so there are n to the n keys: 256 at four cards, 16.8 million at eight. A weak key is one that lands on a cycle shorter than n factorial rounds: 24 at four cards, 40,320 at eight. (One breath.)');
 {
   // Built like the other parts (Scott, 2026-10-05): the idea in one picture, a key becoming a starting state on one
@@ -3566,7 +3566,7 @@ Three ideas. First, how a key picks its cycle, step by step, with two example ke
   cap2(4.95, 'It shuffles both decks', 'into the key’s starting state');
   s.addShape(pres.shapes.OVAL, { x: 10.72, y: 1.42, w: 1.0, h: 1.0, fill: { color: C.background1 }, line: { color: C.accent1, width: 6 }, objectName: 'cycle ring' });
   s.addShape(pres.shapes.OVAL, { x: 11.43, y: 1.43, w: 0.28, h: 0.28, fill: { color: C.accent2 }, line: { color: C.text1, width: 1.5 }, objectName: 'key marker' });
-  cap2(9.42, 'That state sits on one cycle', 'its length: how long the stream runs');
+  cap2(9.42, 'That state sits on one cycle', 'its length: when the stream repeats');
   [3.98, 8.5].forEach((x) => s.addText('→', { x, y: 1.5, w: 0.8, h: 0.8, margin: 0, align: 'center', valign: 'middle', fontSize: 40, color: C.accent6, isTextBox: true }));
   // the three ideas, in the order the slides take them
   const ideas = [['1', 'How a key picks its cycle', 'Step by step, with two keys: BAAD lands on the biggest cycle, ABBA on a tiny one.'],
@@ -3594,7 +3594,7 @@ animation('weak', 60);
   const s = slide('CONTENT', 'Key Analysis: Summary', 40, `
 Let me bring the key analysis together.
 
-One: a key picks the cycle. A key is just a word; it shuffles both decks to a starting state, and the cycle that state sits on sets how long the stream runs.
+One: a key picks the cycle. A key is just a word; it shuffles both decks to a starting state, and the cycle that state sits on sets how long until the stream repeats.
 
 Two: keys land fairly. Each cycle catches keys in proportion to its size. At eight cards the largest cycle holds 78.40 percent of the states and catches 78.40 percent of the keys.
 
@@ -3609,7 +3609,7 @@ That's the research. Last part: what it all means.`);
   // the weak-key side of its verdict).
   const rows = [
     { n: '1', head: 'A key picks the cycle', y: 1.3, p: PICS.keyToCycle,
-      body: 'A key is a word that shuffles both decks to a starting state. The cycle that state sits on sets how long the stream runs.' },
+      body: 'A key is a word that shuffles both decks to a starting state. The cycle that state sits on sets how long until the stream repeats.' },
     { n: '2', head: 'Keys land fairly', y: 2.45, p: PICS.landing,
       body: 'Each cycle catches keys in proportion to its size: at 8 cards, the largest cycle holds 78.40% of the states and catches 78.40% of the keys.' },
     { n: '3', head: 'Weak keys are rare, but real', y: 3.6, p: PICS.weak,
@@ -3718,7 +3718,7 @@ If asked about the limits:
 
 I want to be as plain about the limits as about the findings.
 
-This is a map of the cipher's structure, not a security proof. It tells you how long the stream runs and how keys spread across cycles. It does not tell you the stream looks random, and it doesn't test any real attack. The honest status is that no weaknesses are known, which is much weaker than saying none exist.
+This is a map of the cipher's structure, not a security proof. It tells you how long the stream runs before it repeats and how keys spread across cycles. It does not tell you the stream looks random, and it doesn't test any real attack. The honest status is that no weaknesses are known, which is much weaker than saying none exist.
 
 The evidence has edges too. Every run used an empty initialization vector, with the key exactly as long as the deck. Only eleven of the eighteen possible configurations were analyzed: four of the eight rotations at eight cards. The trend rests on three deck sizes, and four cards is too small to carry much weight. And the rotation effect was observed, not explained.`);
   const colA = ['Not a security proof', 'Randomness of the stream was not tested', 'No known-plaintext or chosen-plaintext attack was attempted'];
@@ -3799,7 +3799,7 @@ If asked about earlier methods: I first followed each key until its stream repea
 {
   // A backup since 2026-10-05, for "how long does the stream run before it repeats?"
   const s = slide('CONTENT', 'Backup: how long before the stream repeats', 0, `
-If asked how long the stream actually runs: For a typical key at the best rotation tested: about 1,300 bits at four cards. About 3 million at six. About 12 and a half billion at eight, roughly 1.5 gigabytes of stream. Each step of two cards multiplies it by thousands.
+If asked how long the stream runs before it repeats: For a typical key at the best rotation tested: about 1,300 bits at four cards. About 3 million at six. About 12 and a half billion at eight, roughly 1.5 gigabytes of stream. Each step of two cards multiplies it by thousands.
 
 Two honest footnotes. Counting each output card as a fixed number of bits assumes the output looks random, and I didn't test that, so read these as how long until repeat, not as strength. And a rough projection to the full 26-card deck lands around 2 to the 182nd bits, but that rests on three data points, so it's suggestive, not established.`);
   const tiles = [['4 cards per deck', '1,300', 'bits before repeating'], ['6 cards per deck', '3.0 million', 'bits before repeating'], ['8 cards per deck', '12.5 billion', 'bits, about 1.5 GB of stream']];
