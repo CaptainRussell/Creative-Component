@@ -719,7 +719,7 @@
  *            State 1), scope (the zoom-out to the grid of the 11 configurations analyzed), growth (how fast the state
  *            space grows, from the example's 576 states to 10 cards), shares (the giant cycles: the grid's
  *            rotation-0 column unrolls into bars, then rolls back) and rotation (the 8-card row unrolls)
- *   keys   : the key schedule turns a word into a starting state, which sits on one cycle
+ *   keys   : the key schedule turns a word into a starting arrangement, which sits on one cycle
  *   land   : where all 256 deck-4 keys land, and the weak ones
  *
  * Each step's meta.say is the presenter's line for that click; the deck copies it into the speaker notes.
@@ -978,7 +978,7 @@
     // the critical detail
     S.add('ruleP', 'rect', {}, { x: 1280, y: 64, w: 568, h: 484, rx: 18, fill: PANEL, sw: 0, o: 0, z: 5 });
     S.add('ruleH', 'text', { size: 24, weight: 700, ls: 2 }, { x: 1320, y: 124, content: 'CRITICAL DETAIL', fill: RED, o: 0, z: 6 });
-    S.add('ruleB', 'text', { size: 46, weight: 700, lh: 1.12 }, { x: 1320, y: 196, content: 'The stream must\nnever repeat.', o: 0, z: 6 });
+    S.add('ruleB', 'text', { size: 46, weight: 700, lh: 1.12 }, { x: 1320, y: 196, content: 'The stream must\nnever repeat in use.', o: 0, z: 6 });
     S.add('ruleS', 'text', { size: 24, lh: 1.3 }, { x: 1320, y: 334, content: 'If two messages ever share a\nstretch of stream, lining them up\ncancels the stream out.', fill: '#333333', o: 0, z: 6 });
     S.add('ruleQ', 'text', { size: 24, weight: 700, lh: 1.3 }, { x: 1320, y: 476, content: 'So: how long does this cipher’s\nstream run before it repeats?', fill: RED, o: 0, z: 6 });
 
@@ -1096,8 +1096,8 @@
     S.hold(0.3);
 
     // ---- step 8: the critical detail
-    S.step({ say: 'There is one critical detail that matters for everything after this: the stream must never repeat. If two messages are ever encrypted with the same stretch of stream, Eve can line them up and the stream cancels out. So the question this whole project answers is: how long does this cipher’s stream run before it repeats, and are there keys for which it repeats early?' });
-    S.beat(0.45, (s) => cap(s, 'Critical Detail: the secret stream must never repeat',
+    S.step({ say: 'There is one critical detail that matters for everything after this: the stream must never repeat while it is in use. If two messages are ever encrypted with the same stretch of stream, Eve can line them up and the stream cancels out. A machine with a limited number of arrangements has to repeat eventually, so the question this whole project answers is: how long does this cipher’s stream run before it repeats, and are there keys for which it repeats early?' });
+    S.beat(0.45, (s) => cap(s, 'Critical Detail: the secret stream must never repeat in use',
       'A repeated stretch lets Eve line two messages up and cancel the stream out.\nSo: how long does this cipher’s stream run before it repeats, and for which keys does it repeat early?'));
     S.beat(0.6, (s) => { MACHINE.concat(['okL']).forEach((k) => { s[k].o = 0; }); });
     S.beat(0.6, (s) => { s.ruleP.o = 1; s.ruleH.o = 1; });
@@ -1336,7 +1336,8 @@
             : `Deal from the top, alternating piles: ${op.deals.map((d) => `${nm(d.card)} to pile ${d.pile + 1}`).join(', ')}.\n${nm(found)} has the target value, ${op.target}, so the deal stops.`);
         s.pile0.o = 1; s.pile1.o = 1;
       });
-      // each card dealt shows its value in its corner, and its row of the value table lights (Scott's father, 2026-10-06)
+      // each card dealt shows its value in its corner, and its row of the value table lights (Scott's father, 2026-10-06);
+      // the rebuild clears them all, the target card's too, and says what it is doing (his next round, 2026-10-07)
       const cnt = [0, 0];
       op.deals.forEach((d, j) => {
         const h = cnt[d.pile]++, v = C.val(d.card);
@@ -1356,6 +1357,7 @@
       S.beat(0.45, (s) => {
         cap(s, 'Rebuild the Search Deck', `${parts.join('; ')}.\nThe Search Deck is now ${list(op.after)}.`);
         op.deals.forEach((d) => { s[d.card].badge = 0; }); legOff(s);
+        s[t].glow = 0; s[t].badge = 0; s.opSearch.content = 'REBUILD SEARCH DECK';
       });
       // One card at a time, in the cipher's own order: the undealt cards shift over to the top, then the
       // pile holding the find (the last card dealt onto it comes back first), then the other pile.
@@ -1436,9 +1438,9 @@
     });
     S.hold(0.3);
 
-    S.step({ say: 'To follow every card, each deck is fanned out face up, with its top card on the left. The spades start as the Drive Deck: they supply the numbers. The hearts start as the Search Deck: that is the deck that gets shuffled, and its top card is what the cipher puts out. One detail to keep in mind: every card counts one less than its face, so an ace counts zero. That is zero indexing, and the card-value table on the right keeps it in view.' });
+    S.step({ say: 'To follow every card, each deck is fanned out face up, with its top card on the left. The spades start as the Drive Deck: they supply the numbers. The hearts start as the Search Deck: that is the deck that gets shuffled, and its top card is what the cipher puts out. One detail to keep in mind: every card value is one less than its face, so an ace is worth zero. That is zero indexing, and the card-value table on the right keeps it in view.' });
     S.beat(0.45, (s) => cap(s, 'Setup: each deck is a stack, fanned out with its top card on the left',
-      'Four cards per deck: spades start as the Drive Deck and hearts as the Search Deck; the Discard Pile starts empty.\nEach card counts one less than its face, from zero (the table on the right): Ace = 0, Two = 1, Three = 2, Four = 3.'));
+      'Four cards per deck: spades start as the Drive Deck and hearts as the Search Deck; the Discard Pile starts empty.\nEach card value is one less than its face (the table on the right): Ace = 0, Two = 1, Three = 2, Four = 3.'));
     // the top card stays put; the cards beneath slide out from under it to the right
     S.beat(1.1, (s) => { place(s, START_DRIVE, 'drive'); place(s, START_SEARCH, 'search'); status(s, 'ROUND 1', 'turn 1 of 2'); },
       (id) => { const i = ALL.indexOf(id); return i < 0 ? null : { w: [(i % N) * 0.08, (i % N) * 0.08 + 0.6] }; });
@@ -1545,7 +1547,7 @@
     S.step({ say: 'And this is the same picture as the stream-cipher slide, because the Daniels’ Cipher is a stream cipher. Agent Alice sends only I, C, D, N across the wire. Eve, tapping the line, can copy all four letters, but without the keystream they say nothing. Agent Bob receives exactly the same four letters. The two decks of cards are simply the machine that makes the stream.' });
     S.beat(0.45, (s) => {
       cap(s, 'The packet crosses the wire from Agent Alice to Agent Bob',
-        'The same picture as the stream cipher slide: only ICDN travels, and Eve’s copy says nothing.\nThe Daniels’ Cipher is a stream cipher; its two decks of cards are the machine that makes the keystream.');
+        'The same picture as the stream cipher slide: only ICDN travels, and Eve’s copy says nothing meaningful.\nThe Daniels’ Cipher is a stream cipher; its two decks of cards are the machine that makes the keystream.');
       // the panel keeps ENCRYPT until the wire clears it (Scott, 2026-10-05: ON THE WIRE showed for only a second)
     });
     net.play((s) => {
@@ -1977,13 +1979,16 @@
     S.add('callP', 'rect', {}, { x: X0 + 112, y: Y0 + 100, w: 340, h: 52, rx: 26, fill: WHITE, stroke: GOLD, sw: 3, o: 0, z: 8 });
     S.add('callT', 'text', { size: 22, weight: 700, anchor: 'middle' }, { x: X0 + 282, y: Y0 + 134, content: '', o: 0, z: 9 });
 
-    // one row per deck size: cardinal when counted completely, white and dashed when not done yet (10 cards)
+    // one row per deck size: cardinal when counted completely, white and dashed when not done yet (10 cards). Each row
+    // gives the time per rotation on one computer (Scott's father, 2026-10-07): 8 cards from the run logs, 601-1,037 s
+    // (the paper's "roughly fifteen minutes"); 6 cards about 0.3 s at that rate (the Python port: 9 s); 4 cards 3 ms
+    // even in Python
     const RX = 822, RW = 1026, RH = 124, RYS = [96, 238, 380, 522];
     const ROWS = [
-      ['4 cards per deck · 24 × 24 orders', '576 states', '', '256 keys'],
-      ['6 cards per deck · 720 × 720 orders', '518,400 states', '× 900', '46,656 keys'],
-      ['8 cards per deck · 40,320 × 40,320 orders', '1,625,702,400 states', '× 3,136', '16,777,216 keys · the main result'],
-      ['10 cards per deck · 3,628,800 × 3,628,800 orders', '13.2 trillion states', '× 8,100', 'about 3 TB · 3 months per rotation on one computer'],
+      ['4 cards per deck · 24 × 24 orders', '576 states', '', '256 keys · milliseconds per rotation'],
+      ['6 cards per deck · 720 × 720 orders', '518,400 states', '× 900', '46,656 keys · under a second per rotation'],
+      ['8 cards per deck · 40,320 × 40,320 orders', '1,625,702,400 states', '× 3,136', '16,777,216 keys · about 15 minutes per rotation'],
+      ['10 cards per deck · 3,628,800 × 3,628,800 orders', '13.2 trillion states', '× 8,100', 'about 3 TB · about 3 months per rotation'],
     ];
     ROWS.forEach(([lab, big, mult, keys], i) => {
       const y = RYS[i], next = i === 3, ink = next ? INK : WHITE, mute = next ? GREY : WHITE;
@@ -2028,7 +2033,7 @@
 
       // ---- step 0: the example's ring opens back into its 576 states, which fill a 24 x 24 grid, and its row label
       // slides over to become the 4-card row
-      S.step({ say: 'Now, how fast does the number of states grow with the deck size? Start from our example: its ring opens back into its 576 states, one dot each, in a grid with a Drive Deck order across and a Search Deck order down. 24 times 24 is 576.' });
+      S.step({ say: 'Now, how fast does the number of states grow with the deck size? Start from our example: its ring opens back into its 576 states, one dot each, in a grid with a Drive Deck order across and a Search Deck order down. 24 times 24 is 576, and a computer counts them in milliseconds.' });
       S.beat(0.45, (s) => cap(s, 'Every state at 4 cards per deck: 24 × 24 = 576',
         'The 4-card example again: one dot per state, a Drive Deck order across and a Search Deck order down.\nNow watch what happens to that number as the decks get bigger.'));
       S.beat(0.6, (s) => { GRID_FADE.forEach((k) => { s[k].o = 0; }); });
@@ -2052,15 +2057,15 @@
       S.hold(0.3);
 
       // ---- step 1: 6 cards
-      S.step({ say: 'Now add two cards to each deck. Six cards have 720 orders, so there are 720 times 720 states: 518,400. That whole grid of 576 shrinks into one small block, and there are 900 blocks. Still small enough to count every state.' });
+      S.step({ say: 'Now add two cards to each deck. Six cards have 720 orders, so there are 720 times 720 states: 518,400. That whole grid of 576 shrinks into one small block, and there are 900 blocks. Still small enough to count every state, in under a second for each rotation setting.' });
       S.beat(0.45, (s) => cap(s, '6 cards per deck: 720 × 720 = 518,400 states',
-        'The whole 4-card grid shrinks into one block of a 30 × 30 grid: 900 times as many states.\nStill small enough to count every one.'));
+        'The whole 4-card grid shrinks into one block of a 30 × 30 grid: 900 times as many states.\nStill small enough to count every one, in under a second per rotation.'));
       zoom(30, 'lv1', [], 1, 'the whole 4-card grid', '6! = 720');
 
       // ---- step 2: 8 cards, the main result
-      S.step({ say: 'Add two more. Eight cards per deck: 40,320 orders each, 1.6 billion states. The whole six-card square is now one block of a 56 by 56 grid. This is the main result of this work: every one of those 1.6 billion states counted, at four rotation settings.' });
+      S.step({ say: 'Add two more. Eight cards per deck: 40,320 orders each, 1.6 billion states. The whole six-card square is now one block of a 56 by 56 grid. This is the main result of this work: every one of those 1.6 billion states counted, at four rotation settings, in about fifteen minutes each on one computer.' });
       S.beat(0.45, (s) => cap(s, '8 cards per deck: 1,625,702,400 states, the main result',
-        'The whole 6-card square becomes one block of a 56 × 56 grid: 3,136 times more.\nEvery one of these states was counted, at four rotation settings.'));
+        'The whole 6-card square becomes one block of a 56 × 56 grid: 3,136 times more.\nEvery one of these states was counted, at four rotation settings: about 15 minutes per rotation on one computer.'));
       zoom(56, 'lv2', [], 2, 'the whole 6-card square', '8! = 40,320');
 
       // ---- step 3: 10 cards, future work
@@ -2401,9 +2406,9 @@
       S.hold(0.3);
 
       // ---- step 1: the recommendation
-      S.step({ say: 'Rotation 5 is the one I recommend: the biggest dominant cycle, 78 percent of all states; the longest typical period, about a billion rounds; and the highest floor. Rotations 0 and 3 each let a real key onto a four-round cycle. Three honest limits: it is the best of four tested, out of eight possible at this size; at six cards the criteria disagree; and it says nothing about randomness, or about the full 26-card deck.' });
+      S.step({ say: 'Rotation 5 is the one I recommend: the biggest dominant cycle, 78 percent of all states; the longest typical period, about a billion rounds; and the highest floor. Rotations 0 and 3 each let a real key onto a four-round cycle. Three honest limits. It is the best of four tested, out of eight possible at this size. It is a finding for eight cards: at six cards, rotation 5 still has the biggest cycle and the longest typical period, but a real key there reaches an 11-round cycle, so the criteria disagree. And it says nothing about randomness, or about the full 26-card deck.' });
       S.beat(0.45, (s) => cap(s, 'Rotation 5: the one I recommend',
-        'The biggest cycle, 78.4% of all states; the longest typical period; and no real key reaches a cycle under 289 rounds.\nAt 6 cards these criteria point to different rotations, so this is a finding for 8 cards.'));
+        'The biggest cycle, 78.4% of all states; the longest typical period; and no real key reaches a cycle under 289 rounds.\nAt 6 cards rotation 5 still has the biggest cycle, but a real key there reaches an 11-round cycle: this is a finding for 8 cards.'));
       S.beat(0.7, (s) => { Object.assign(s.anC3, { fill: '#F3F3F3', stroke: RED, sw: 4 }); s.anB.o = 1; s.anBT.o = 1; });
       S.hold(0.4);
     };
@@ -2426,7 +2431,7 @@
     const c1 = C.stateCode(fr1.drive, fr1.search), c2 = C.stateCode(fr2.drive, fr2.search);
 
     S.add('keyLbl', 'text', { size: 27, weight: 700, ls: 1.5 }, { x: 72, y: 96, content: 'KEY' });
-    S.add('keySub', 'text', { size: 21 }, { x: 72, y: 128, content: 'letters become numbers', fill: GREY });
+    S.add('keySub', 'text', { size: 21 }, { x: 72, y: 128, content: 'letters convert to numbers', fill: GREY });
     for (let i = 0; i < 4; i++) {
       S.add('kt' + i, 'rect', {}, { x: sx(i) + 8, y: 38, w: 100, h: 92, rx: 12, fill: '#FFFFFF', stroke: CHAR, sw: 2.5 });
       S.add('kl' + i, 'text', { size: 54, weight: 700, anchor: 'middle', family: root.Anim.SERIF }, { x: sx(i) + 58, y: 104, content: KEY1[i] });
@@ -2519,9 +2524,9 @@
       .concat([0, 1, 2, 3].flatMap((i) => ['kt' + i, 'kl' + i, 'kv' + i, 'op' + i, 'hl' + i, 'mrl' + i, 'mrs' + i]), START_DRIVE, START_SEARCH) };
     return () => {
       // ---- step 0
-      S.step({ say: 'So where does a starting arrangement come from? From the key. A key is just a word, here B-A-A-D, and each letter becomes a number. Both decks start in order.' });
-      S.beat(0.45, (s) => cap(s, 'A key is a word; each letter becomes a number',
-        'The key here is BAAD. With 4 cards per deck the letters are A to D, worth 0 to 3, and every run starts from both decks in order.\nThe key never names a state directly. It shuffles its way to one, using the same two cuts.'));
+      S.step({ say: 'So where does a starting arrangement come from? From the key. A key is just a word, here B-A-A-D, and each letter converts to a number. Both decks start in order.' });
+      S.beat(0.45, (s) => cap(s, 'A key is a word; each letter converts to a number',
+        'The key here is BAAD. With 4 cards per deck the letters are A to D, worth 0 to 3, and every run starts from both decks in order.\nThe key never names a state directly: it shuffles its way to a starting arrangement, using the same two cuts.'));
       S.hold(0.6);
 
       // ---- step 1: first letter, slowly
@@ -2826,7 +2831,7 @@
       S.hold(0.3);
 
       // ---- step 1: the worst case, and the key check
-      S.step({ say: 'But the average is the wrong number to take comfort from. Look at the last column. At rotation 0, exactly one key out of 16.8 million lands on a cycle of four rounds: its entire stream repeats after 16 values. At rotation 3, two keys do. For whoever picks that key, it isn’t weak, it’s catastrophic. So any real deployment needs a key check: reject a key whose starting state is on a short cycle, before encrypting anything. Whether a person with a deck of cards could do that check by hand is an open and genuinely practical question.' });
+      S.step({ say: 'But the average is the wrong number to take comfort from. Look at the last column. At rotation 0, exactly one key out of 16.8 million lands on a cycle of four rounds: its entire stream repeats after 16 values, four rounds of four values. At rotation 3, two keys do. For whoever picks that key, it isn’t weak, it’s catastrophic. So any real deployment needs a key check: reject a key whose starting state is on a short cycle, before encrypting anything. Whether a person with a deck of cards could do that check by hand is an open and genuinely practical question.' });
       S.beat(0.45, (s) => cap(s, 'Any deployment needs a key check before use',
         'At rotations 0 and 3, a real key reaches a cycle of just 4 rounds; at 1 and 5, at least 225.\nWhether a person with a deck of cards could check a key by hand is an open, practical question.'));
       S.beat(1.0, (s) => { for (let j = 0; j < 4; j++) s['wtS' + j].o = 1; }, byRow);
@@ -3120,7 +3125,7 @@ const PICS = (() => {
     wire: P('Agent Alice sends a packet to Agent Bob while Eve watches the wire', WIRE),
     decks: P('Two decks of four cards over the empty Discard Pile', DECKS),
     rings: P('The four cycles of the 4-card example', PIC_RINGS),
-    keyToCycle: P('A key word becomes a starting state on one cycle', KEY_TO_CYCLE),
+    keyToCycle: P('A key word becomes a starting arrangement on one cycle', KEY_TO_CYCLE),
     checklist: P('A checklist: what is established, what is not claimed, what comes next', CHECKLIST),
     grid: P('The grid of the 11 configurations analyzed, its one duplicate greyed',
       GRID.map((row, i) => row.map((cell, j) => donut(27 + j * 42, 22 + i * 38, 12, 6, cell, i === 0 && j === 3 ? DUP : null)).join('')).join('') + `<rect x="89" y="3" width="44" height="38" rx="6" fill="none" stroke="#${GOLDL}" stroke-width="3"/>`),
@@ -3154,8 +3159,9 @@ newSection('Opening');
 // The title page, which is also the last page (Scott, 2026-10-05: the talk ends where it began): the paper's name, the
 // presenter, the fan of cards and the site's QR code.
 const PAPER = 'Analysis of a Card-Shuffle Stream Cipher';
-// The thesis in one sentence, on the Overview of Research and again on the Summary of Research (Scott, 2026-10-05).
-const THESIS = 'Reducing the deck size of the Daniels’ Cipher enables complete analysis (versus the usual statistical analysis) of every state, its cycles, its period and its weak keys.';
+// The thesis in one sentence, on the Overview of Research and again on the Summary of Research (Scott, 2026-10-05);
+// "its keys" replaced "its period", which its cycles already give (Scott's father, 2026-10-07).
+const THESIS = 'Reducing the deck size of the Daniels’ Cipher enables complete analysis (versus the usual statistical analysis) of every state, its cycles, its keys and its weak keys.';
 // Part 1's name (Scott, 2026-10-05), on its divider, the two roadmap slides and the Recap.
 const PART1 = 'Why a Deck of Cards for a Hand Cipher?';
 function titlePage(s) {
@@ -3357,7 +3363,7 @@ The point for what comes next: the stream depends only on the key, never on the 
   const label = (t) => ({ text: t, options: { bold: true, color: C.text1 } });
   const rows = [
     { n: '1', head: 'Set up', y: 1.3, h: 1.0, p: PICS.decks, body: [
-      { text: 'Two decks of n cards, each a stack: the Drive Deck supplies the numbers and the Search Deck gets shuffled. Every card counts one less than its face (A = 0); the Discard Pile starts empty.' }] },
+      { text: 'Two decks of n cards, each a stack: the Drive Deck supplies the numbers and the Search Deck gets shuffled. Every card value is one less than its face (A = 0); the Discard Pile starts empty.' }] },
     { n: '2', head: 'One Turn', y: 2.42, h: 1.43, p: PICS.turn, body: [
       label('Count Cut: '), { text: 'the bottom Drive Deck card counts c; the top c Search Deck cards move to the bottom.', options: { breakLine: true } },
       label('Search Cut: '), { text: 'the top Drive Deck card sets a target; deal until it appears, then rebuild.', options: { breakLine: true } },
@@ -3425,12 +3431,12 @@ Here's how this part goes: the big picture, the details, then a summary, like th
 
 The big picture: every round takes the decks from one state to the next, and every step can be undone, so the states fall into separate cycles. A stream repeats when its cycle comes back around, so the size of the cycles is what matters.
 
-Three ideas. First, why every state lands in a cycle. Second, counting every state: the eleven configurations I counted, and how fast the number of states grows with the deck size. Third, what the cycles show: a few giant cycles hold almost every state, and the rotation setting reshapes them.
+Three ideas. First, why every state lands in a cycle. Second, counting every state: the eleven configurations I counted, and how fast the number of states grows with the deck size. Third, what the cycles show: a few giant cycles hold almost every state, and the rotation setting has a surprisingly large impact on them.
 
 The small pictures are the animations coming up; the summary brings them back.`);
   const ideas = [['1', 'Every state lands in a cycle', 'Each state leads to exactly one next state, so the states form separate cycles.', [PICS.rings]],
-    ['2', 'Every state, counted', '11 configurations, from 576 states at 4 cards to 1.6 billion at 8.', [PICS.grid, PICS.growth]],
-    ['3', 'What the cycles show', 'A few giant cycles hold almost every state, and the rotation setting reshapes them.', [PICS.giants, PICS.rotation]]];
+    ['2', 'Every state, counted', '11 configurations, from 576 states at 4 cards to 1.6 billion states at 8.', [PICS.grid, PICS.growth]],
+    ['3', 'What the cycles show', 'A few giant cycles hold almost every state, and the rotation setting has a surprisingly large impact on them.', [PICS.giants, PICS.rotation]]];
   const w = 3.94, g = 0.26;
   ideas.forEach(([n, h1, d, pics], i) => {
     const x = 0.5 + i * (w + g), y = 1.45;
@@ -3450,12 +3456,12 @@ animation('loops', 85);
 // cycles and the rotation's impact, then the summary. The five animation slides are one animation (cycles() in
 // scenes.js), so each starts exactly where the one before it stopped. The memory and stream-length slides are backups.
 animation('scope', 50);
-animation('growth', 60);
+animation('growth', 70);      // each row gives its time per rotation (Scott's father, 2026-10-07)
 animation('shares', 60);
 animation('rotation', 105);    // its first click replays the breakdown's rotation (Scott, 2026-10-06)
 // Rotation Analysis at 8 Deck Size, moved here from Key Analysis (2026-10-05) as the rotation slide's conclusion, then
 // made the sixth part of the cycles animation so it grows out of that slide's last frame (Scott, 2026-10-05).
-animation('analysis', 45);
+animation('analysis', 55);    // the 6-card limit spelled out (Scott's father, 2026-10-07; no 6-card pick, Scott)
 {
   // The chapter brought back together, like part 2's summary (2026-10-04). Since 2026-10-05 it has one bullet per
   // animation slide, each with a small picture of that animation (Scott), then the bridge.
@@ -3466,20 +3472,20 @@ One: every state lands in exactly one cycle. Every step can be undone, so states
 
 Two: all eleven configurations, every state counted: four, six and eight cards at rotations zero, one, three and five, where rotation five at four cards is just rotation one again; about six and a half billion states.
 
-Three: the number of states explodes with the deck size: 576 at four cards, about half a million at six, 1.6 billion at eight. Ten cards is future work.
+Three: the number of states explodes with the deck size: 576 at four cards, about half a million at six, 1.6 billion at eight, and 13.2 trillion at ten: that one is proposed future work.
 
 Four: a few giant cycles hold almost every state, then a tail of small cycles, where a key would repeat early.
 
-Five: the rotation setting reshapes the cycles: at eight cards the largest one grows from 45 to 78 percent of all states, and of the four tested, rotation five did best.
+Five: the rotation setting has a surprisingly large impact on the cycles: at eight cards the largest one grows from 45 to 78 percent of all states, and of the four tested, rotation five did best.
 
-What decides which cycle a stream runs on is where its key starts. That's the key analysis, right after a quick recap.`);
+What decides which cycle a stream runs on is where its key starts. That's next, in the key analysis, right after a quick recap.`);
   // The pictures are SVG, shown like any other image: miniatures of the animations, in their colours (PICS).
   const rows = [
     { head: 'Every state lands in exactly one cycle', body: 'Every step can be undone, so states never merge into each other.', p: PICS.rings },
     { head: 'All 11 configurations, every state counted', body: '4, 6 and 8 cards per deck, at rotations 0, 1, 3 and 5: about 6.5 billion states.', p: PICS.grid },
-    { head: 'The number of states explodes with deck size', body: '576 at 4 cards, 518,400 at 6, 1.6 billion at 8; 10 cards is future work.', p: PICS.growth },
+    { head: 'The number of states explodes with deck size', body: '576 at 4 cards, 518,400 at 6, 1.6 billion at 8, and 13.2 trillion at 10 (proposed future work).', p: PICS.growth },
     { head: 'A few giant cycles hold almost every state', body: 'Then a tail of small cycles: a key that lands there repeats early.', p: PICS.giants },
-    { head: 'The rotation setting reshapes the cycles', body: 'At 8 cards the largest cycle grows from 45% to 78% of all states; rotation 5 tested best of the four.', p: PICS.rotation },
+    { head: 'The rotation setting has a surprisingly large impact', body: 'At 8 cards the largest cycle grows from 45% to 78% of all states; rotation 5 tested best of the four.', p: PICS.rotation },
   ];
   rows.forEach((r, i) => { r.y = 1.28 + i * 0.92; });
   rows.slice(0, -1).forEach((r, i) => s.addShape(pres.shapes.RECTANGLE, { x: 0.79, y: r.y + 0.72, w: 0.04, h: rows[i + 1].y - r.y - 0.62,
@@ -3493,7 +3499,7 @@ What decides which cycle a stream runs on is where its key starts. That's the ke
   });
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 6.0, w: 12.333, h: 0.85, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'bridge panel' });
   s.addText([{ text: 'Counted, not estimated. ', options: { bold: true, color: C.accent1 } },
-    { text: 'Which cycle a stream runs on depends on where its key starts: that is the key analysis, after a quick recap.', options: { color: C.text1 } }],
+    { text: 'Which cycle a stream runs on depends on where its key starts: next is the key analysis, after a quick recap.', options: { color: C.text1 } }],
   { x: 0.85, y: 6.0, w: 11.7, h: 0.85, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 18, isTextBox: true });
 }
 
@@ -3505,22 +3511,22 @@ newSection('Recap');
   const s = slide('CONTENT', 'Recap', 40, `
 Before we turn to keys, here is everything so far in three sentences.
 
-One: a deck of cards is a cipher you can carry anywhere, with no power and no network, and as a stream cipher its one critical detail is that the secret stream must never repeat.
+One: a deck of cards is a cipher you can carry anywhere, with no power and no network, and as a stream cipher its one critical detail is that the secret stream must run long enough never to repeat while it is in use.
 
 Two: Dr. Daniels' cipher makes that stream with two decks and a Discard Pile, one value per turn, and Alice and Bob make the same stream from the same key.
 
-Three: every arrangement of the decks sits on exactly one cycle, so the stream repeats only when its cycle comes back around. I counted every arrangement, all 1.6 billion at eight cards: a few giant cycles hold almost every state, and the rotation setting reshapes them.
+Three: every arrangement of the decks sits on exactly one cycle, so the stream repeats only when its cycle comes back around. I counted every arrangement, all 1.6 billion at eight cards: a few giant cycles hold almost every state, and the rotation setting has a surprisingly large impact on them.
 
 What's left is the key. A key decides where the decks start, so it decides which cycle you are on, and how long until your stream repeats. The stream itself never runs out; what matters is when it repeats, because from that moment it leaks information.`);
   // One small picture per part, like the Part 3 summary's (Scott, 2026-10-05): the wire from part 1 (Agent Alice, the
   // packet, Agent Bob, Eve's eye on the tap), the breakdown's two decks over the empty Discard Pile, and the cycles.
   const rows = [
     { n: '1', head: PART1, y: 1.35, p: PICS.wire,
-      body: 'A deck needs no power or network and hides in plain sight. As a stream cipher, its one critical detail: the secret stream must never repeat.' },
+      body: 'A deck needs no power or network and hides in plain sight. As a stream cipher, its one critical detail: the secret stream must run long enough never to repeat in use.' },
     { n: '2', head: 'The Daniels’ Cipher', y: 2.85, p: PICS.decks,
       body: 'Two decks and a Discard Pile. Each turn cuts and searches the decks and adds one value to the stream; Alice and Bob make the same stream from the same key.' },
     { n: '3', head: 'Daniels’ Cipher: Cycle Structure', y: 4.35, p: PICS.rings,
-      body: 'Every arrangement of the decks sits on one cycle, and the stream repeats when its cycle closes. All 1.6 billion counted at 8 cards: a few giant cycles hold almost everything, and the rotation reshapes them.' },
+      body: 'Every arrangement of the decks sits on one cycle, and the stream repeats when its cycle closes. All 1.6 billion counted at 8 cards: a few giant cycles hold almost everything, and the rotation setting has a surprisingly large impact on them.' },
   ];
   rows.slice(0, -1).forEach((r, i) => s.addShape(pres.shapes.RECTANGLE, { x: 0.83, y: r.y + 0.9, w: 0.04, h: rows[i + 1].y - r.y - 0.7,
     fill: { color: 'D9D9D9' }, line: { color: 'D9D9D9', width: 0 }, objectName: 'part connector' }));
@@ -3541,8 +3547,8 @@ What's left is the key. A key decides where the decks start, so it decides which
 newSection('Daniels’ Cipher: Key Analysis (Ch 5)');
 // The line counts the keys and defines a weak key (Scott's father, 2026-10-06), one sentence per line (Scott).
 divider('4', 'H', 'Daniels’ Cipher: Key Analysis', 'Chapter 5',
-  'A key is a word of n letters from an n-letter alphabet, so there are nⁿ keys: 256 at 4 cards, 16.8 million at 8.\nA weak key lands on a cycle shorter than n! rounds: 24 at 4 cards, 40,320 at 8.',
-  'Part four: keys. A key is a word as long as the deck, from an alphabet as big as the deck, so there are n to the n keys: 256 at four cards, 16.8 million at eight. A weak key is one that lands on a cycle shorter than n factorial rounds: 24 at four cards, 40,320 at eight. (One breath.)');
+  'A key is a word of n letters from an n-letter alphabet, so there are nⁿ possible keys: 256 at 4 cards, 16.8 million at 8.\nA weak key lands on a cycle shorter than n! rounds: 24 at 4 cards, 40,320 at 8.',
+  'Part four: keys. A key is a word as long as the deck, from an alphabet as big as the deck, so there are n to the n possible keys: 256 at four cards, 16.8 million at eight. A weak key is one that lands on a cycle shorter than n factorial rounds: 24 at four cards, 40,320 at eight. (One breath.)');
 {
   // Built like the other parts (Scott, 2026-10-05): the idea in one picture, a key becoming a starting state on one
   // cycle, then the three ideas the part takes in order. Plain panels: none of these is a card.
@@ -3558,15 +3564,15 @@ Three ideas. First, how a key picks its cycle, step by step, with two example ke
     s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: 1.6, w: 0.66, h: 0.72, rectRadius: 0.08, fill: { color: C.background1 }, line: { color: '4A4A4A', width: 1.5 }, objectName: 'key letter' });
     s.addText(ch, { x, y: 1.6, w: 0.66, h: 0.72, margin: 0, align: 'center', valign: 'middle', fontFace: 'Cambria', fontSize: 26, bold: true, color: C.text1, isTextBox: true });
   });
-  cap2(0.35, 'A key is a word', 'each letter becomes a number');
+  cap2(0.35, 'A key is a word', 'each letter converts to a number');
   [['S', 5.92], ['H', 6.9]].forEach(([su, x]) => {
     for (let k = 2; k >= 0; k--) s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + k * 0.07, y: 1.47 + k * 0.06, w: 0.62, h: 0.84, rectRadius: 0.07, fill: { color: C.background1 }, line: { color: 'BDBDBD', width: 1 }, objectName: 'deck stack' });
     s.addText(SUITS[su], { x, y: 1.47, w: 0.62, h: 0.84, margin: 0, align: 'center', valign: 'middle', fontSize: 26, color: suitColor(su), isTextBox: true });
   });
-  cap2(4.95, 'It shuffles both decks', 'into the key’s starting state');
+  cap2(4.95, 'It shuffles both decks', 'into the key’s starting arrangement');
   s.addShape(pres.shapes.OVAL, { x: 10.72, y: 1.42, w: 1.0, h: 1.0, fill: { color: C.background1 }, line: { color: C.accent1, width: 6 }, objectName: 'cycle ring' });
   s.addShape(pres.shapes.OVAL, { x: 11.43, y: 1.43, w: 0.28, h: 0.28, fill: { color: C.accent2 }, line: { color: C.text1, width: 1.5 }, objectName: 'key marker' });
-  cap2(9.42, 'That state sits on one cycle', 'its length: when the stream repeats');
+  cap2(9.42, 'It sits on one cycle', 'its length: when the stream repeats');
   [3.98, 8.5].forEach((x) => s.addText('→', { x, y: 1.5, w: 0.8, h: 0.8, margin: 0, align: 'center', valign: 'middle', fontSize: 40, color: C.accent6, isTextBox: true }));
   // the three ideas, in the order the slides take them
   const ideas = [['1', 'How a key picks its cycle', 'Step by step, with two keys: BAAD lands on the biggest cycle, ABBA on a tiny one.'],
@@ -3594,7 +3600,7 @@ animation('weak', 60);
   const s = slide('CONTENT', 'Key Analysis: Summary', 40, `
 Let me bring the key analysis together.
 
-One: a key picks the cycle. A key is just a word; it shuffles both decks to a starting state, and the cycle that state sits on sets how long until the stream repeats.
+One: a key picks the cycle. A key is just a word; it shuffles both decks to a starting arrangement, and the cycle that arrangement sits on sets how long until the stream repeats.
 
 Two: keys land fairly. Each cycle catches keys in proportion to its size. At eight cards the largest cycle holds 78.40 percent of the states and catches 78.40 percent of the keys.
 
@@ -3609,11 +3615,11 @@ That's the research. Last part: what it all means.`);
   // the weak-key side of its verdict).
   const rows = [
     { n: '1', head: 'A key picks the cycle', y: 1.3, p: PICS.keyToCycle,
-      body: 'A key is a word that shuffles both decks to a starting state. The cycle that state sits on sets how long until the stream repeats.' },
+      body: 'A key is a word that shuffles both decks to a starting arrangement. The cycle it sits on sets how long until the stream repeats.' },
     { n: '2', head: 'Keys land fairly', y: 2.45, p: PICS.landing,
       body: 'Each cycle catches keys in proportion to its size: at 8 cards, the largest cycle holds 78.40% of the states and catches 78.40% of the keys.' },
     { n: '3', head: 'Weak keys are rare, but real', y: 3.6, p: PICS.weak,
-      body: 'About 1 key in 40,000 to 71,000 at 8 cards. At rotations 0 and 3, one or two keys repeat after just 4 rounds: 16 values.' },
+      body: 'About 1 key in 40,000 to 71,000 at 8 cards. At rotations 0 and 3, one or two keys repeat after just 4 rounds, or 16 values: at 8 cards a round is 4 turns, one value each.' },
     { n: '4', head: 'Rotation 5 tests best for 8-card decks', y: 4.75, p: PICS.rotations,
       body: 'Best of the four on cycle structure, it also has the fewest weak keys: 1 in 71,392. Any real use needs a key check.' },
   ];
@@ -3628,30 +3634,30 @@ That's the research. Last part: what it all means.`);
   });
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 6.0, w: 12.333, h: 0.85, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'bridge panel' });
   s.addText([{ text: 'Fair, but check every key. ', options: { bold: true, color: C.accent1 } },
-    { text: 'Next: what this work establishes, then the whole road again.', options: { color: C.text1 } }],
+    { text: 'Next: what this work establishes, then a look back at the whole talk.', options: { color: C.text1 } }],
   { x: 0.85, y: 6.0, w: 11.7, h: 0.85, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 18, isTextBox: true });
 }
 
 // =================================================================== CONCLUSIONS (Ch 6)
 newSection('Summary of Creative Component (Ch 6)');
 divider('5', 'S', 'Summary of Creative Component', 'Chapter 6',
-  'What this work establishes, then the whole road again: from a deck of cards to its weak keys.',
-  'Part five: what this work establishes, then the whole road again. (One breath.)');
+  'What this work establishes, then a look back at the whole talk: from a deck of cards to its weak keys.',
+  'Part five: what this work establishes, then a look back at the whole talk. (One breath.)');
 {
   const s = slide('CONTENT', 'What this work establishes', 45, `
 Four things, in one breath each.
 
 Every step of this cipher can be undone, so its states split into clean cycles, and the cycle structure can be listed exactly, with a self-check.
 
-That listing is complete for eleven configurations, up to 1.6 billion states.
+That listing is complete for eleven configurations: at eight cards, 1.6 billion states and 16.8 million keys for each rotation.
 
-The rotation setting, an afterthought, dominates the structure, and two of its values let a real key onto a four-round cycle.
+At eight cards, the rotation setting, an afterthought, dominates the structure, and two of its values let a real key onto a four-round cycle.
 
-And the key schedule is fair: keys land in proportion to cycle size, to within hundredths of a percent. Weak keys are rare, but real.`);
+And at eight cards the key schedule is fair: keys land in proportion to cycle size, to within hundredths of a percent. Weak keys are rare, but real.`);
   const pts = [['A', 'S', 'Exact cycles, not estimates', 'Every step can be undone, so every state sits on exactly one cycle, and the cycle lengths check themselves.'],
-    ['2', 'H', 'A complete map', 'All 11 configurations, up to 1,625,702,400 states and 16,777,216 keys, every one counted.'],
-    ['3', 'S', 'The rotation setting dominates', 'The largest cycle ranges from 44.83% to 78.40%; rotations 0 and 3 let a real key onto a 4-round cycle.'],
-    ['4', 'H', 'Keys land fairly', 'In proportion to cycle size, to within hundredths of a percentage point. Weak keys are rare, but real.']];
+    ['2', 'H', 'A complete map', 'All 11 configurations, every one counted: at 8 cards, 1,625,702,400 states and 16,777,216 keys for each rotation.'],
+    ['3', 'S', 'The rotation setting dominates', 'At 8 cards, the largest cycle ranges from 44.83% to 78.40%; rotations 0 and 3 let a real key onto a 4-round cycle.'],
+    ['4', 'H', 'Keys land fairly', 'At 8 cards, in proportion to cycle size, to within hundredths of a percentage point. Weak keys are rare, but real.']];
   // each finding with the picture it came from (Scott, 2026-10-05): the cycles, the 11 configurations, the rotation
   // bars and the keys landing
   const pics = [PICS.rings, PICS.grid, PICS.rotation, PICS.landing];
@@ -3666,11 +3672,11 @@ And the key schedule is fair: keys land in proportion to cycle size, to within h
   // The Overview of Research again, now with what each part found (Scott, 2026-10-05: "copy the overview slide"), and
   // mirroring it: the same pictures and the same thesis sentence.
   const s = slide('CONTENT', 'Summary of Research', 40, `
-Here's the whole road again, with what each part found.
+Here's the roadmap from the start again, with what each part found.
 
-Why a deck of cards: a cipher you can carry anywhere, with no power and no network, whose stream must never repeat. The Daniels' Cipher: two decks, two cuts, one value per turn. Its cycle structure: I counted every state, and a few giant cycles hold almost all of them. Its keys: they land fairly, and weak keys are rare, but real. And what it means: exact answers, with honest limits and clear next steps.
+Why a deck of cards: a cipher you can carry anywhere, with no power and no network, whose stream must never repeat in use. The Daniels' Cipher: two decks, two cuts, one value per turn. Its cycle structure: I counted every state, and a few giant cycles hold almost all of them. Its keys: they land fairly, and weak keys are rare, but real. And what it means: exact answers, with honest limits and clear next steps.
 
-The thesis I started with: reducing the deck size of the Daniels' Cipher enables a complete analysis, instead of the usual statistical one, of every state, its cycles, its period and its weak keys. At four, six and eight cards per deck, that analysis is complete.`);
+The thesis I started with: reducing the deck size of the Daniels' Cipher enables a complete analysis, instead of the usual statistical one, of every state, its cycles, its keys and its weak keys. At four, six and eight cards per deck, that analysis is complete.`);
   const items = [['1', 'S', PART1, 'Carry it anywhere; never repeat the stream'],
     ['2', 'H', 'The Daniels’ Cipher', 'Two decks, two cuts, one value per turn'],
     ['3', 'S', 'Daniels’ Cipher: Cycle Structure', 'Every state counted; a few giant cycles'],
@@ -3720,18 +3726,18 @@ I want to be as plain about the limits as about the findings.
 
 This is a map of the cipher's structure, not a security proof. It tells you how long the stream runs before it repeats and how keys spread across cycles. It does not tell you the stream looks random, and it doesn't test any real attack. The honest status is that no weaknesses are known, which is much weaker than saying none exist.
 
-The evidence has edges too. Every run used an empty initialization vector, with the key exactly as long as the deck. Only eleven of the eighteen possible configurations were analyzed: four of the eight rotations at eight cards. The trend rests on three deck sizes, and four cards is too small to carry much weight. And the rotation effect was observed, not explained.`);
+The evidence has edges too. Every run used an empty initialization vector, the IV: an extra word wrapped around the key, IV plus key plus IV, so that one key can start the decks in different places. With it empty, the key sequence is just the key. And the key was exactly as long as the deck. Only eleven of the eighteen possible configurations were analyzed: four of the eight rotations at eight cards. The trend rests on three deck sizes, and four cards is too small to carry much weight. And the rotation effect was observed, not explained.`);
   const colA = ['Not a security proof', 'Randomness of the stream was not tested', 'No known-plaintext or chosen-plaintext attack was attempted'];
-  const colB = ['Every run used an empty IV, with the key exactly as long as the deck', '11 of 18 possible configurations: 4 of the 8 rotations at 8 cards', 'Three deck sizes, and 4 cards is too small to carry weight', 'The rotation effect was observed, not explained'];
+  const colB = ['Every run used an empty IV (a word wrapped around the key: IV + key + IV) and a key as long as the deck', '11 of 18 possible configurations: 4 of the 8 rotations at 8 cards', 'Three deck sizes, and 4 cards is too small to carry weight', 'The rotation effect was observed, not explained'];
   [[0.5, 'Not claimed', 'S', colA], [6.77, 'Limits of the evidence', 'H', colB]].forEach(([x, t, su, items]) => {
-    card(s, { x, y: 1.4, w: 6.06, h: 3.55, rank: su === 'S' ? 'X' : '?', suit: su });
+    card(s, { x, y: 1.4, w: 6.06, h: 3.8, rank: su === 'S' ? 'X' : '?', suit: su });     // taller since the IV is explained (2026-10-07)
     s.addText(t, { x: x + 0.62, y: 1.52, w: 5.2, h: 0.5, margin: 0, fontFace: 'Calibri', fontSize: 21, bold: true, color: C.text1, isTextBox: true });
     s.addText(items.map((it, k) => ({ text: it, options: { bullet: true, breakLine: k < items.length - 1 } })),
       { x: x + 0.3, y: 2.2, w: 5.55, h: 3.0, margin: 0, valign: 'top', fontFace: 'Calibri', fontSize: 18, color: C.text1, paraSpaceAfter: 10, isTextBox: true });
   });
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 5.25, w: 12.333, h: 1.2, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'status panel' });
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 5.45, w: 12.333, h: 1.2, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'status panel' });
   s.addText([{ text: 'Honest status: ', options: { bold: true, color: C.text1 } }, { text: 'no weaknesses are known, which is a much weaker statement than that none exist.', options: { color: C.accent1, bold: true } }],
-    { x: 0.85, y: 5.3, w: 11.7, h: 1.1, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 21, isTextBox: true });
+    { x: 0.85, y: 5.5, w: 11.7, h: 1.1, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 21, isTextBox: true });
 }
 {
   const s = slide('CONTENT', 'Backup: future work', 0, `
@@ -3743,8 +3749,8 @@ Second, search for colliding keys: two different keys that produce the same star
 
 Third, design a key check a person can actually do by hand, since the cipher is only as low-tech as its weakest step.
 
-After that: finish the other seven configurations, rotation two at four cards, two and four at six, and two, four, six and seven at eight (the four- and six-card ones I have since run); scale to ten cards, which on one computer is about three months per rotation, so it needs a method that splits the work across many servers; try key schedules that avoid short cycles, vary the key and IV length, and, most of all, work out why the rotation matters. And whether what I found at four, six and eight cards holds at the full 26 is the question that remains.`);
-  const top = [['1', 'H', 'Test the stream’s randomness', 'Crowley’s check: how often do consecutive outputs match? Cheap, and the first thing to do.'],
+After that: try to break it, with known-plaintext and key-recovery attacks, which this work never attempted; finish the other seven configurations, rotation two at four cards, two and four at six, and two, four, six and seven at eight (the four- and six-card ones I have since run); scale to ten cards, which on one computer is about three months per rotation, so it needs a method that splits the work across many servers; try key schedules that avoid short cycles, vary the key and IV length, and, most of all, work out why the rotation matters. And whether what I found at four, six and eight cards holds at the full 26 is the question that remains.`);
+  const top = [['1', 'H', 'Test whether the stream looks random', 'Crowley’s check: how often do consecutive outputs match? Cheap, and the first thing to do.'],
     ['2', 'S', 'Search for colliding keys', 'Two keys, one stream. RC4 narrowed this for 17 years; at 8 cards it can be settled exactly.'],
     ['3', 'H', 'A key check a person can do', 'Reject a short-cycle key by hand, as low-tech as the cipher it protects.']];
   const w = 3.94, g = 0.26;
@@ -3757,7 +3763,7 @@ After that: finish the other seven configurations, rotation two at four cards, t
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 4.95, w: 12.333, h: 1.85, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'then panel' });
   s.addText([
     { text: 'Then: ', options: { bold: true } },
-    { text: 'run the other 7 configurations · scale to 10 cards (about 3 TB and three months per rotation on one computer: servers need a method that splits the work) · key schedules that steer away from short cycles · vary the key and IV length', options: { breakLine: true } },
+    { text: 'try to break it (known-plaintext and key-recovery attacks) · run the other 7 configurations · scale to 10 cards (about 3 TB and three months per rotation on one computer: servers need a method that splits the work) · key schedules that steer away from short cycles · vary the key and IV length', options: { breakLine: true } },
     { text: 'And the deepest: why does the rotation setting reshape the cycles, and do these findings hold at 26 cards?', options: { bold: true, color: C.accent1 } },
   ], { x: 0.85, y: 5.05, w: 11.7, h: 1.65, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 18, color: C.text1, isTextBox: true, paraSpaceAfter: 6 });
 }
@@ -3773,7 +3779,7 @@ The problem: the usual way stores, for every state, where it goes next. At eight
 
 The idea: store no map at all. Keep one checkbox per state, a single bit: have I visited this one yet? And when I need to know where a state goes next, I just run the shuffle again instead of looking it up.
 
-The result: under 400 megabytes, about seventy times less, and all 1.6 billion states sorted in roughly fifteen minutes per rotation setting. Every state is still visited exactly once, so the trade costs a little time and saves a lot of memory. That trade is what made eight cards possible on an ordinary laptop.
+The result: under 400 megabytes, about seventy times less memory, and all 1.6 billion states sorted in roughly fifteen minutes per rotation setting. Every state is still visited exactly once, so the trade costs a little time and saves a lot of memory. That trade is what made eight cards possible on an ordinary laptop.
 
 If asked about earlier methods: I first followed each key until its stream repeated, which only sees the cycles some key lands on. At four and six cards, storing the full map was fine.`);
   s.addChart(pres.charts.BAR, [{ name: 'Memory', labels: ['A full map of every next state', "The laptop's usable memory", 'One bit per state (this work)'], values: [28, 1.8, 0.39] }], {
@@ -3785,7 +3791,7 @@ If asked about earlier methods: I first followed each key until its stream repea
   const parts = [
     ['THE PROBLEM', 'A full map needs 28 GB', 'The usual way stores where each of the 1.6 billion states goes next. The laptop had 1.8 GB free.'],
     ['THE IDEA', 'Keep one bit per state', 'Just a checkbox: visited yet? Instead of storing a state’s next state, run the shuffle again to get it.'],
-    ['THE RESULT', 'Under 400 MB, about 70 times less', 'All 1.6 billion states sorted in about 15 minutes per rotation, each one visited exactly once.'],
+    ['THE RESULT', 'Under 400 MB, about 70 times less memory', 'All 1.6 billion states sorted in about 15 minutes per rotation, each one visited exactly once.'],
   ];
   const PH = 1.45;
   parts.forEach(([tag, h1, d], i) => {
@@ -3801,7 +3807,7 @@ If asked about earlier methods: I first followed each key until its stream repea
   const s = slide('CONTENT', 'Backup: how long before the stream repeats', 0, `
 If asked how long the stream runs before it repeats: For a typical key at the best rotation tested: about 1,300 bits at four cards. About 3 million at six. About 12 and a half billion at eight, roughly 1.5 gigabytes of stream. Each step of two cards multiplies it by thousands.
 
-Two honest footnotes. Counting each output card as a fixed number of bits assumes the output looks random, and I didn't test that, so read these as how long until repeat, not as strength. And a rough projection to the full 26-card deck lands around 2 to the 182nd bits, but that rests on three data points, so it's suggestive, not established.`);
+Two honest footnotes. Counting each value as a fixed number of bits assumes every value is equally likely and unpredictable, and I didn't test that, so read these as how long until repeat, not as strength. And a rough projection to the full 26-card deck lands around 2 to the 182nd bits, but that rests on three data points, so it's suggestive, not established.`);
   const tiles = [['4 cards per deck', '1,300', 'bits before repeating'], ['6 cards per deck', '3.0 million', 'bits before repeating'], ['8 cards per deck', '12.5 billion', 'bits, about 1.5 GB of stream']];
   const w = 3.45, xs = [0.5, 4.94, 9.38];
   tiles.forEach(([h1, big, unit], i) => {
@@ -3818,7 +3824,7 @@ Two honest footnotes. Counting each output card as a fixed number of bits assume
   s.addText('Typical key, best rotation tested at each size (rotation 0 at 4 cards, rotation 5 at 6 and 8).', { x: 0.5, y: 4.6, w: 12.33, h: 0.45, margin: 0, fontFace: 'Calibri', fontSize: 16, color: C.accent6, isTextBox: true });
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 5.25, w: 12.333, h: 1.55, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'caveat panel' });
   s.addText([
-    { text: 'Bits are a unit for comparing, not a strength claim. ', options: { bold: true } }, { text: 'Each card counts as log₂ n bits only if the output is truly random, which was not tested.', options: { breakLine: true } },
+    { text: 'Bits are a unit for comparing, not a strength claim. ', options: { bold: true } }, { text: 'Each value counts as log₂ n bits (3 at 8 cards) only if every value is equally likely and unpredictable, which was not tested.', options: { breakLine: true } },
     { text: 'A rough projection to 26 cards: about 2', options: { color: C.accent6 } }, { text: '182', options: { superscript: true, color: C.accent6 } }, { text: ' bits. Three data points make that suggestive, not established.', options: { color: C.accent6 } },
   ], { x: 0.85, y: 5.3, w: 11.7, h: 1.45, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 18, color: C.text1, isTextBox: true, paraSpaceAfter: 4 });
 }
@@ -3836,6 +3842,8 @@ Two honest footnotes. Counting each output card as a fixed number of bits assume
     ['3', '26', '17', '1,068,446,790', '65.72%', '4', '768,688,198', '0.0025%'], ['5', '28', '15', '1,274,528,834', '78.40%', '289', '1,037,714,096', '0.0014%']],
   { x: 0.5, y: 1.4, w: 12.33, colW: [1.15, 0.95, 1.55, 1.85, 1.6, 1.75, 1.95, 1.53], rowH: 0.62 });
   note(s, 'Periods are in rounds. At 12 bits per round, rotation 5’s typical period is about 1.245 × 10¹⁰ bits. Per-cycle detail for every rotation is in Appendix Tables 8–11.', 4.85);
+  // why so many cycles go unreached (Scott's father, 2026-10-07, found it striking)
+  note(s, 'Every cycle no key reaches is 123 rounds or shorter: 16.8 million keys over 1.6 billion states give a cycle about one key per 97 rounds of its length.', 5.65);
 }
 // Moved out of the talk at Scott's request (2026-10-04): the talk shows every state accounted for, so the bug
 // story is for Q&A only.
@@ -3863,12 +3871,17 @@ I also didn't trust any single program. Three independent implementations, in C 
 }
 {
   const s = slide('CONTENT', 'Backup: is key placement fair? The statistical test', 0, `
-If the key schedule behaved like a random choice of starting state, each cycle's share of keys would equal its share of states. Across all four rotations at eight cards, the largest gap is between 0.005 and 0.025 of a percentage point.
+The short answer is yes, it's fair. If the key schedule behaved like a random choice of starting state, each cycle's share of keys would equal its share of states. Across all four rotations at eight cards, the largest gap is between 0.005 and 0.025 of a percentage point.
 
 Chi-square on the well-sampled cycles: three of four are comfortably consistent with random placement. Rotation 3 gives p = 0.010. Two things temper it: with 16.8 million keys the test can detect tiny departures, and the gap there, 0.025 of a point, is negligible in absolute terms. One marginal result among four tests is weak evidence. No mechanism is known; it's recorded as a loose end, not a finding.`);
   table(s, [['Rotation', 'Chi-square', 'Degrees of freedom', 'p-value', 'Reading'], ['0', '14.6', '13', '0.33', 'consistent with random placement'], ['1', '4.0', '9', '0.91', 'consistent'], ['3', '30.5', '15', '0.010', 'marginal: reported, not explained'], ['5', '12.0', '12', '0.44', 'consistent']],
   { x: 0.5, y: 1.4, w: 12.33, colW: [1.4, 1.8, 2.3, 1.6, 5.23], rowH: 0.6, aligns: ['left', 'right', 'right', 'right', 'left'] });
   note(s, 'Tested on cycles expected to catch at least 5 keys. Largest gap between a cycle’s share of keys and its share of states, any rotation: 0.005 to 0.025 of a percentage point. Example at rotation 5: a cycle of 1,251,128 states caught 12,886 keys where 12,912 were expected.', 4.75);
+  // the slide's question answered at its foot (Scott's father, 2026-10-07)
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 5.7, w: 12.333, h: 1.1, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'answer panel' });
+  s.addText([{ text: 'Yes, key placement is fair. ', options: { bold: true, color: C.accent1 } },
+    { text: 'At every rotation, each cycle catches its share of the keys to within 0.025 of a percentage point; rotation 3’s p = 0.010 is a loose end, not a finding.', options: { color: C.text1 } }],
+  { x: 0.85, y: 5.7, w: 11.7, h: 1.1, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 20, isTextBox: true });
 }
 {
   const s = slide('CONTENT', 'Backup: why spreading keys out is bad here', 0, `
@@ -3877,7 +3890,11 @@ The entropy figure in Table 7 reads backwards from intuition. High entropy means
 So the two statistics pull in opposite directions: rotation 5 has the longest typical period and the lowest entropy; rotation 1 has the highest entropy and the shortest typical period.`);
   table(s, [['Rotation (8 cards)', 'Cycles reached by keys', 'Typical period', 'Entropy (bits)', 'Keys on largest cycle'], ['0', '15 of 26', '649,047,078', '1.5636', '44.83%'], ['1', '11 of 18', '517,955,323', '1.9383', '48.03%'], ['3', '17 of 26', '768,688,198', '1.5563', '65.73%'], ['5', '15 of 28', '1,037,714,096', '1.0758', '78.40%']],
   { x: 0.5, y: 1.4, w: 12.33, colW: [2.6, 2.6, 2.4, 2.1, 2.63], rowH: 0.6 });
-  note(s, 'High entropy here is a warning sign: it means more keys sit on shorter cycles. The ideal is every key on one giant cycle.', 4.75);
+  // the slide's point, in a panel and larger than a note (Scott's father, 2026-10-07)
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y: 4.75, w: 12.333, h: 1.2, rectRadius: 0.1, fill: { color: C.background2 }, line: { color: C.background2, width: 0 }, objectName: 'takeaway panel' });
+  s.addText([{ text: 'High entropy here is a warning sign: ', options: { bold: true, color: C.accent1 } },
+    { text: 'it means more keys sit on shorter cycles. The ideal is every key on one giant cycle.', options: { color: C.text1 } }],
+  { x: 0.85, y: 4.75, w: 11.7, h: 1.2, margin: 0, valign: 'middle', fontFace: 'Calibri', fontSize: 22, isTextBox: true });
 }
 {
   const s = slide('CONTENT', 'Backup: where the bits come from', 0, `
@@ -3965,8 +3982,9 @@ function reachMap(W, H) {
   let b = `<rect x="${X0}" y="44" width="${f(X(WEAK) - X0)}" height="478" fill="#FBF1D3"/>`
     + `<line x1="${f(X(WEAK))}" y1="44" x2="${f(X(WEAK))}" y2="522" stroke="#${GOLD}" stroke-width="2" stroke-dasharray="7 5"/>`
     + t(X0 + 10, 30, 20, 'Weak: shorter than 8! = 40,320 rounds', ` font-weight="700" fill="#${GOLD}"`)
-    + filled(W - 640, 24) + t(W - 624, 31, 19, 'at least one key lands on it', ` fill="#${INK}"`)
-    + hollow(W - 310, 24) + t(W - 294, 31, 19, 'no key lands on it', ` fill="#${INK}"`)
+    + t(W - 935, 31, 19, 'Each dot is a cycle:', ` font-weight="700" fill="#${INK}"`)
+    + filled(W - 700, 24) + t(W - 684, 31, 19, 'at least one key lands on it', ` fill="#${INK}"`)
+    + hollow(W - 370, 24) + t(W - 354, 31, 19, 'no key lands on it', ` fill="#${INK}"`)
     + `<line x1="${X0}" y1="540" x2="${X1}" y2="540" stroke="#${MID}" stroke-width="2"/>`;
   ['1', '10', '100', '1,000', '10,000', '100,000', '1 million', '10 million', '100 million', '1 billion'].forEach((lab, k) => {
     const x = f(X(10 ** k));
@@ -3986,7 +4004,11 @@ function reachMap(W, H) {
       if (q < 0) q = LANES.length - 1;
       lanes[q].push(x);
       b += k ? filled(x, y + LANES[q]) : hollow(x, y + LANES[q]);
-      if (L === low[0] && k === low[1]) b += `<circle cx="${f(x)}" cy="${y + LANES[q]}" r="${R + 6}" fill="none" stroke="#${RED}" stroke-width="3"/>`;
+      if (L === low[0] && k === low[1]) {
+        b += `<circle cx="${f(x)}" cy="${y + LANES[q]}" r="${R + 6}" fill="none" stroke="#${RED}" stroke-width="3"/>`;
+        // how many keys landed on a catastrophic cycle: one dot can hold two keys (Scott's father, 2026-10-07)
+        if (L < 100) b += t(f(x - R - 12), y + LANES[q] + 6, 17, `${k} key${k > 1 ? 's' : ''}`, ` text-anchor="end" font-weight="700" fill="#${RED}"`);
+      }
     });
   });
   return { data: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${b}</svg>`) };
@@ -3997,11 +4019,11 @@ If asked which cycles keys never reach, or whether the short cycles are a risk:
 
 At eight cards, every rotation leaves a scatter of small cycles that no key lands on: 11 of 26 at rotation 0, 7 of 18 at rotation 1, 9 of 26 at rotation 3 and 13 of 28 at rotation 5. Every one of them is 123 rounds or shorter. The cipher doesn't avoid them. With 16.8 million keys spread over 1.6 billion states, a cycle can expect about one key for every 97 rounds of its length, so a cycle of a few rounds usually gets none.
 
-That's probability, not a guarantee. At rotations 0 and 3, one key and two keys did land on a four-round cycle: the catastrophic keys, ringed in red. At rotations 1 and 5 the shortest cycle any key reaches is 225 and 289 rounds.
+That's probability, not a guarantee. At rotation 0 one key, and at rotation 3 two keys, landed on a four-round cycle: the catastrophic keys, ringed in red. Each dot is a cycle, not a key, so rotation 3's two keys share one ringed dot, labelled 2 keys. At rotations 1 and 5 the shortest cycle any key reaches is 225 and 289 rounds.
 
 The paper's Figure 2 marks the unreached cycles at rotation 0, Chapter 5 explains why they are unreached, and Appendix Tables 8 to 11 give every cycle's key count. At four and six cards only three cycles go unreached: the asterisks in the four- and six-card table.`);
   s.addImage(Object.assign({ x: 0.5, y: 1.3, w: 12.333, h: 4.3, altText: 'Every cycle at 8 cards per deck, by rotation and length: the cycles no key reaches are all short', objectName: 'reach map' }, reachMap(1776, 619)));
-  s.addText('Hollow: no key’s first state lies on that cycle. Each is 123 rounds or shorter, because 16.8 million keys over 1.6 billion states give a cycle about one key per 97 rounds of its length. That is probability, not a guarantee: at rotations 0 and 3, one key and two keys landed on a 4-round cycle (ringed in red). At 4 and 6 cards only three cycles go unreached.',
+  s.addText('Each dot is one cycle, not one key. Hollow: no key’s first state lies on that cycle. Each is 123 rounds or shorter, because 16.8 million keys over 1.6 billion states give a cycle about one key per 97 rounds of its length. That is probability, not a guarantee: 1 key at rotation 0 and 2 keys at rotation 3 landed on a 4-round cycle (ringed in red; the 2 share one cycle).',
     { x: 0.5, y: 5.72, w: 12.33, h: 1.1, margin: 0, fontFace: 'Calibri', fontSize: 16, color: C.accent6, valign: 'top', isTextBox: true });
 }
 
